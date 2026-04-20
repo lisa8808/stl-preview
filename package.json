@@ -1,0 +1,16 @@
+{
+  "name": "stl-preview",
+  "version": "1.0.0",
+  "description": "A free, serverless 3D STL file preview service with AI-powered natural language modifications.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/blob": "^2.3.3"
+  }
+}
