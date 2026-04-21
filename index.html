@@ -3,2321 +3,522 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 机械设计工作台</title>
+  <title>AI 机械设计工作台 - 项目列表</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      height: 100vh;
+      min-height: 100vh;
       color: #fff;
-      overflow: hidden;
     }
 
-    /* ===== Header ===== */
+    /* Header */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 28px;
+      padding: 16px 32px;
       background: rgba(0,0,0,0.25);
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .header-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       color: #00d9ff;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
-    .header-actions { display: flex; gap: 10px; }
-    .header-btn {
-      padding: 6px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: rgba(255,255,255,0.7);
+    .header-subtitle {
       font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      margin-left: 12px;
+      font-weight: 400;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Top bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .top-bar-left {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+    .top-bar-left span {
+      color: #00d9ff;
+      font-weight: 600;
+    }
+
+    /* New project button */
+    .btn-new {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(0,217,255,0.25);
     }
-    .header-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-new:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,217,255,0.35);
+    }
+    .btn-new:active { transform: translateY(0); }
 
-    /* ===== Three-column Layout ===== */
-    .main-container {
+    /* Card grid */
+    .card-grid {
       display: grid;
-      grid-template-columns: 260px 1fr 260px;
-      gap: 0;
-      height: calc(100vh - 49px);
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
     }
 
-    /* ===== Panels ===== */
-    .panel {
-      display: flex;
-      flex-direction: column;
+    /* Project card */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.25s;
       overflow: hidden;
+      position: relative;
     }
-    .panel-left, .panel-right {
-      background: rgba(0,0,0,0.15);
-      border-right: 1px solid rgba(255,255,255,0.06);
-    }
-    .panel-right {
-      border-right: none;
-      border-left: 1px solid rgba(255,255,255,0.06);
-    }
-    .panel-section-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: rgba(255,255,255,0.35);
-      padding: 16px 20px 8px;
+    .card:hover {
+      border-color: rgba(0,217,255,0.3);
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
 
-    /* ===== Left: Upload ===== */
-    .upload-area {
-      margin: 0 16px 12px;
-      border: 2px dashed rgba(255,255,255,0.15);
-      border-radius: 12px;
+    .card-preview {
+      height: 160px;
+      background: rgba(0,0,0,0.2);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      padding: 24px 12px;
-    }
-    .upload-area:hover { border-color: #00d9ff; background: rgba(0,217,255,0.04); }
-    .upload-area.dragover { border-color: #00ff88; background: rgba(0,255,136,0.06); }
-    .upload-icon { font-size: 28px; margin-bottom: 8px; }
-    .upload-text { font-size: 13px; margin-bottom: 4px; color: rgba(255,255,255,0.7); }
-    .upload-hint { font-size: 11px; color: rgba(255,255,255,0.3); }
-    #fileInput { display: none; }
-    .loading { display: none; text-align: center; padding: 12px; }
-    .loading.show { display: block; }
-    .spinner {
-      width: 24px; height: 24px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: #00d9ff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== Left: Upload History ===== */
-    .file-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 12px;
-    }
-    .file-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-bottom: 2px;
-    }
-    .file-item:hover { background: rgba(255,255,255,0.06); }
-    .file-item.active { background: rgba(0,217,255,0.12); }
-    .file-item-icon { font-size: 18px; flex-shrink: 0; }
-    .file-item-info { flex: 1; min-width: 0; }
-    .file-item-name {
-      font-size: 13px;
-      color: rgba(255,255,255,0.85);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .file-item-meta {
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      margin-top: 2px;
-    }
-    .file-item-delete {
-      font-size: 12px;
-      color: rgba(255,255,255,0.2);
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 4px;
-      opacity: 0;
-      transition: all 0.15s;
-    }
-    .file-item:hover .file-item-delete { opacity: 1; }
-    .file-item-delete:hover { color: #ff6b6b; background: rgba(255,100,100,0.15); }
-    .file-list-empty {
-      padding: 24px 16px;
-      text-align: center;
-      color: rgba(255,255,255,0.2);
-      font-size: 12px;
-    }
-
-    /* ===== Middle: Preview ===== */
-    .panel-center { display: flex; flex-direction: column; }
-    .preview-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.2);
+      font-size: 48px;
+      color: rgba(255,255,255,0.15);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       position: relative;
       overflow: hidden;
-      min-height: 0;
     }
-    #preview-canvas {
-      flex: 1;
+    .card-preview canvas {
       width: 100%;
       height: 100%;
-      display: block;
     }
-    .preview-placeholder {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+    .card-preview-empty {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-    .preview-placeholder-icon { font-size: 56px; margin-bottom: 12px; opacity: 0.2; }
-    .preview-placeholder-text { font-size: 16px; color: rgba(255,255,255,0.3); }
-    .preview-placeholder-hint { font-size: 13px; color: rgba(255,255,255,0.18); margin-top: 6px; }
-    .preview-controls {
-      position: absolute;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
       gap: 8px;
     }
-    .preview-btn {
-      padding: 6px 14px;
-      background: rgba(0,0,0,0.55);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      color: #fff;
+    .card-preview-empty-text {
       font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      backdrop-filter: blur(10px);
-    }
-    .preview-btn:hover { background: rgba(0,0,0,0.75); }
-    .preview-btn.active { background: rgba(0,217,255,0.3); border-color: #00d9ff; color: #00d9ff; }
-
-    /* ===== Middle: Chat ===== */
-    .chat-panel {
-      height: 280px;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.15);
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .chat-header {
-      padding: 10px 16px;
-      background: rgba(0,217,255,0.06);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 12px;
-      font-weight: 600;
-      color: #00d9ff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .chat-message {
-      max-width: 85%;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-    .chat-message.user {
-      align-self: flex-end;
-      background: rgba(0,217,255,0.2);
-      border-bottom-right-radius: 4px;
-    }
-    .chat-message.assistant {
-      align-self: flex-start;
-      background: rgba(255,255,255,0.08);
-      border-bottom-left-radius: 4px;
-    }
-    .chat-input-area {
-      display: flex;
-      gap: 8px;
-      padding: 10px 16px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .chat-input {
-      flex: 1;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 8px 14px;
-      color: #fff;
-      font-size: 12px;
-      font-family: inherit;
-    }
-    .chat-input:focus { outline: none; border-color: #00d9ff; }
-    .chat-input::placeholder { color: rgba(255,255,255,0.25); }
-    .chat-send {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, #00d9ff, #00ff88);
-      border: none;
-      border-radius: 50%;
-      color: #1a1a2e;
-      font-size: 16px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .chat-send:hover { transform: scale(1.08); }
-    .chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .chat-empty {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: rgba(255,255,255,0.2);
-      font-size: 12px;
-    }
-    .chat-message.highlight {
-      box-shadow: inset 0 0 0 1px rgba(0,217,255,0.4);
-      background: rgba(0,217,255,0.12);
-      transition: box-shadow 0.3s, background 0.3s;
     }
 
-    /* ===== Right: Version History ===== */
-    .version-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 12px;
+    .card-body {
+      padding: 16px 18px;
     }
-    .version-item {
-      padding: 10px 12px;
-      background: rgba(0,0,0,0.12);
-      border-radius: 10px;
-      margin-bottom: 4px;
-      cursor: pointer;
-      transition: background 0.15s;
-      position: relative;
-    }
-    .version-item:hover { background: rgba(0,0,0,0.22); }
-    .version-item.generating { }
-    .version-item.failed { }
-    .version-item.done { }
-    .version-item.selected {
-      background: rgba(0,217,255,0.08);
-      box-shadow: inset 0 0 0 1px rgba(0,217,255,0.25);
-    }
-    .version-item.previewing {
-      background: rgba(255,159,67,0.06);
-      box-shadow: inset 0 0 0 1px rgba(255,159,67,0.25);
-    }
-    .version-top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .version-status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .version-status-dot.generating {
-      background: #ffa502;
-      animation: pulse-dot 1s ease-in-out infinite;
-    }
-    .version-status-dot.done { background: #2ed573; }
-    .version-status-dot.failed { background: #ff4757; }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
-    }
-    .version-desc {
-      flex: 1;
-      font-size: 12px;
-      color: rgba(255,255,255,0.8);
+    .card-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .version-time {
-      font-size: 10px;
-      color: rgba(255,255,255,0.25);
-      flex-shrink: 0;
-    }
-    .version-detail {
-      margin-top: 6px;
-      padding: 6px 8px;
-      background: rgba(0,0,0,0.18);
-      border-radius: 5px;
-      font-size: 10px;
-      line-height: 1.7;
-      color: rgba(255,255,255,0.4);
-    }
-    .version-actions {
+    .card-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 6px;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
     }
-    .version-revert {
-      font-size: 10px;
-      color: rgba(0,217,255,0.5);
-      cursor: pointer;
+    .card-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .version-revert:hover { color: #00d9ff; }
-    .version-eye {
+    .card-file-count {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Card actions */
+    .card-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card:hover .card-actions { opacity: 1; }
+    .card-action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.7);
       font-size: 13px;
       cursor: pointer;
-      opacity: 0.3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.15s;
-      user-select: none;
-      line-height: 1;
+      backdrop-filter: blur(4px);
     }
-    .version-eye:hover { opacity: 0.7; }
-    .version-eye.active { opacity: 1; }
-    .version-list-empty {
-      padding: 24px 16px;
+    .card-action-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
+    .card-action-btn.danger:hover { background: rgba(255,80,80,0.7); }
+
+    /* Empty state */
+    .empty-state {
       text-align: center;
-      color: rgba(255,255,255,0.2);
-      font-size: 12px;
+      padding: 80px 20px;
     }
-    .version-more {
-      position: relative;
-      font-size: 12px;
-      color: rgba(255,255,255,0.3);
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      user-select: none;
-      margin-left: auto;
+    .empty-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
+    .empty-title {
+      font-size: 18px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 10px;
     }
-    .version-more:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.06); }
-    .version-menu {
+    .empty-hint {
+      font-size: 13px;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 28px;
+    }
+
+    /* Modal */
+    .modal-overlay {
       display: none;
-      position: absolute;
-      right: 0;
-      bottom: 100%;
-      margin-bottom: 4px;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
       background: #1e2a3a;
       border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 28px 32px;
+      width: 400px;
+      max-width: 90vw;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #00d9ff;
+    }
+    .modal-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: rgba(0,217,255,0.4); }
+    .modal-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 20px;
+      resize: vertical;
+      min-height: 60px;
+      transition: border-color 0.2s;
+    }
+    .modal-textarea:focus { border-color: rgba(0,217,255,0.4); }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-btn {
+      padding: 8px 20px;
       border-radius: 8px;
-      min-width: 120px;
-      padding: 4px 0;
-      z-index: 100;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    }
-    .version-menu.show { display: block; }
-    .version-menu-item {
-      padding: 7px 14px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.7);
+      border: none;
+      font-size: 13px;
       cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.1s;
+      transition: all 0.15s;
     }
-    .version-menu-item:hover { background: rgba(255,255,255,0.08); }
-    .version-menu-item.danger { color: #ff6b6b; }
-    .version-menu-item.danger:hover { background: rgba(255,100,100,0.12); }
+    .modal-btn-cancel {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .modal-btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .modal-btn-confirm {
+      background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+      color: #fff;
+      font-weight: 600;
+    }
+    .modal-btn-confirm:hover { box-shadow: 0 4px 12px rgba(0,217,255,0.3); }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 1100px) { .main-container { grid-template-columns: 220px 1fr 220px; } }
-    @media (max-width: 800px) { .main-container { grid-template-columns: 1fr; } .panel-left, .panel-right { display: none; } }
+    /* Rename inline */
+    .card-name-input {
+      width: 100%;
+      padding: 2px 6px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,217,255,0.4);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+    }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="header">
-    <div class="header-title">⚙️ AI 机械设计工作台</div>
-    <div class="header-actions">
-      <button class="header-btn" onclick="createTestPlate()">创建测试零件</button>
+    <div class="header-title">
+      ⚙️ AI 机械设计工作台
+      <span class="header-subtitle">项目列表</span>
     </div>
   </header>
 
-  <div class="main-container">
-    <!-- Left Panel: Upload + File History -->
-    <div class="panel panel-left">
-      <div class="panel-section-title">导入零件</div>
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">⚙️</div>
-        <div class="upload-text">拖入 STL / STEP 文件</div>
-        <div class="upload-hint">支持 .stl .step .stp，最大 10MB</div>
-      </div>
-      <input type="file" id="fileInput" accept=".stl,.step,.stp,application/sla,model/stl,model/step">
-      <div class="loading" id="loading"><div class="spinner"></div></div>
-
-      <div class="panel-section-title">上传历史</div>
-      <div class="file-list" id="fileList">
-        <div class="file-list-empty" id="fileListEmpty">暂无上传记录</div>
-      </div>
+  <div class="container">
+    <div class="top-bar">
+      <div class="top-bar-left">共 <span id="projectCount">0</span> 个项目</div>
+      <button class="btn-new" onclick="showNewProjectModal()">+ 新建项目</button>
     </div>
 
-    <!-- Middle Panel: Preview + Chat -->
-    <div class="panel panel-center">
-      <div class="preview-area" id="previewArea">
-        <div class="preview-placeholder" id="previewPlaceholder">
-          <div class="preview-placeholder-icon">⚙️</div>
-          <div class="preview-placeholder-text" style="font-size:20px;color:rgba(255,255,255,0.6);margin-bottom:12px;">AI 机械设计专家</div>
-          <div class="preview-placeholder-hint" style="max-width:420px;line-height:1.8;font-size:13px;color:rgba(255,255,255,0.35);">
-            导入 STL / STEP 零件 → 自动几何分析 → 对话修改参数 → 导出新零件<br><br>
-            <span style="color:rgba(0,217,255,0.5);">拖入文件或点击此处上传</span>
-          </div>
-        </div>
-        <canvas id="preview-canvas"></canvas>
-        <div class="preview-controls" id="previewControls" style="display:none">
-          <button class="preview-btn" id="btn-wireframe">线框</button>
-          <button class="preview-btn" id="btn-original" onclick="toggleOriginal()">回到原稿</button>
-          <button class="preview-btn" onclick="exportSTL()">导出 STL</button>
-          <button class="preview-btn" onclick="exportSTEP()">导出 STEP</button>
-        </div>
-      </div>
-
-      <!-- Chat -->
-      <div class="chat-panel" id="chatPanel">
-        <div class="chat-header">AI设计助手</div>
-        <div class="chat-messages" id="chatMessages">
-          <div class="chat-empty">上传模型后，用自然语言描述修改需求</div>
-        </div>
-        <div class="chat-input-area">
-          <input type="text" class="chat-input" id="chatInput" placeholder="例如：放大20%、挖洞、变红色、旋转90度..." disabled>
-          <button class="chat-send" id="chatSend" disabled>➤</button>
-        </div>
-      </div>
+    <div class="card-grid" id="cardGrid">
+      <!-- Cards rendered here -->
     </div>
 
-    <!-- Right Panel: Version History -->
-    <div class="panel panel-right">
-      <div class="panel-section-title">修改历史</div>
-      <div class="version-list" id="versionList">
-        <div class="version-list-empty" id="versionListEmpty">修改操作会自动记录在这里</div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-icon">⚙️</div>
+      <div class="empty-title">还没有项目</div>
+      <div class="empty-hint">创建第一个项目，开始 AI 机械设计</div>
+      <button class="btn-new" onclick="showNewProjectModal()">+ 新建项目</button>
+    </div>
+  </div>
+
+  <!-- New Project Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-title">新建项目</div>
+      <div class="modal-label">项目名称</div>
+      <input class="modal-input" id="modalName" placeholder="例如：减速器壳体设计" maxlength="50" autofocus>
+      <div class="modal-label">备注（可选）</div>
+      <textarea class="modal-textarea" id="modalDesc" placeholder="项目说明..." maxlength="200"></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" onclick="hideModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="createProject()">创建</button>
       </div>
     </div>
   </div>
 
-  <!-- Three.js via CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/STLLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
-
-  <!-- CSG.js - Evan Wallace's Constructive Solid Geometry library -->
-  <script src="https://evanw.github.io/csg.js/csg.js"></script>
-
-  <!-- OCCT for STEP file import -->
-  <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js"></script>
-
   <script>
-    // Global Three.js variables
-    let scene, camera, renderer, controls, currentMesh;
-    let isWireframe = false;
-    let isInitialized = false;
-    
-    // Original file snapshot for "回到原稿"
-    let originalSnapshot = null;
-    
-    // For version preview switching: backup current live state
-    let liveStateBackup = null;
-    let previewingVersionId = null;
-    
-    // Undo history stack: saves geometry + transform snapshots
-    const undoStack = [];
-    const MAX_UNDO = 20;
-    
-    function saveUndoState() {
-      if (!currentMesh) return;
-      const geo = currentMesh.geometry.clone();
-      const state = {
-        geometry: geo,
-        position: currentMesh.position.clone(),
-        rotation: currentMesh.rotation.clone(),
-        scale: currentMesh.scale.clone(),
-        color: currentMesh.material.color.getHex(),
-        wireframe: currentMesh.material.wireframe,
-        opacity: currentMesh.material.opacity,
-        transparent: currentMesh.material.transparent,
+    const PROJECTS_KEY = 'stl_projects';
+
+    function getProjects() {
+      try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function saveProjects(projects) {
+      localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+    }
+
+    function showNewProjectModal() {
+      document.getElementById('modalOverlay').classList.add('show');
+      const nameInput = document.getElementById('modalName');
+      nameInput.value = '';
+      document.getElementById('modalDesc').value = '';
+      setTimeout(() => nameInput.focus(), 100);
+    }
+
+    function hideModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    function createProject() {
+      const name = document.getElementById('modalName').value.trim();
+      const desc = document.getElementById('modalDesc').value.trim();
+      if (!name) {
+        document.getElementById('modalName').style.borderColor = '#ff6b6b';
+        setTimeout(() => document.getElementById('modalName').style.borderColor = '', 1500);
+        return;
+      }
+
+      const projects = getProjects();
+      const project = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: name,
+        desc: desc,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        fileCount: 0,
+        versionCount: 0
       };
-      undoStack.push(state);
-      if (undoStack.length > MAX_UNDO) {
-        const old = undoStack.shift();
-        old.geometry.dispose();
-      }
-      console.log('Undo state saved, stack size:', undoStack.length);
-    }
-    
-    function undo() {
-      if (undoStack.length === 0 || !currentMesh) {
-        return '没有可撤销的操作';
-      }
-      const state = undoStack.pop();
-      currentMesh.geometry.dispose();
-      currentMesh.geometry = state.geometry;
-      currentMesh.position.copy(state.position);
-      currentMesh.rotation.copy(state.rotation);
-      currentMesh.scale.copy(state.scale);
-      currentMesh.material.color.setHex(state.color);
-      currentMesh.material.wireframe = state.wireframe;
-      currentMesh.material.opacity = state.opacity;
-      currentMesh.material.transparent = state.transparent;
-      console.log('Undo applied, remaining:', undoStack.length);
-      return `已撤销（剩余 ${undoStack.length} 步）`;
+      projects.unshift(project);
+      saveProjects(projects);
+      hideModal();
+      renderProjects();
     }
 
-    function initThree() {
-      const canvas = document.getElementById('preview-canvas');
-      const container = document.getElementById('previewArea');
-      
-      // Keep placeholder visible until a model is loaded
-      canvas.style.display = 'block';
-      
-      // Scene
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x1a1a2e);
+    function deleteProject(id, e) {
+      e.stopPropagation();
+      if (!confirm('确定删除该项目？项目内的文件历史也会被清除。')) return;
 
-      // Camera
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
-      camera.position.set(0, 50, 100);
+      const projects = getProjects().filter(p => p.id !== id);
+      saveProjects(projects);
 
-      // Renderer
-      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(window.devicePixelRatio);
-
-      // Controls
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-
-      // Lights
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambientLight);
-      
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(50, 50, 50);
-      scene.add(directionalLight);
-      
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-      directionalLight2.position.set(-50, -50, -50);
-      scene.add(directionalLight2);
-
-      // Grid
-      const gridHelper = new THREE.GridHelper(100, 20, 0x333333, 0x222222);
-      scene.add(gridHelper);
-
-      // Resize handler
-      window.addEventListener('resize', onWindowResize);
-
-      // Start animation loop
-      animate();
-      
-      isInitialized = true;
-      console.log('Three.js initialized successfully');
-    }
-
-    function onWindowResize() {
-      const container = document.getElementById('previewArea');
-      if (!container) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      if (controls) controls.update();
-      if (renderer && scene && camera) {
-        renderer.render(scene, camera);
-      }
-    }
-
-    function loadSTL(file) {
-      console.log('Loading STL file:', file.name);
-      
-      const loader = new THREE.STLLoader();
-      
-      // Read file as ArrayBuffer first
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const arrayBuffer = event.target.result;
-        console.log('File read as ArrayBuffer, size:', arrayBuffer.byteLength);
-        
-        try {
-          // Parse the STL data directly from ArrayBuffer
-          const geometry = loader.parse(arrayBuffer);
-          console.log('STL parsed successfully, triangle count:', geometry.attributes.position.count / 3);
-          
-          // Remove old mesh
-          if (currentMesh) {
-            scene.remove(currentMesh);
-            if (currentMesh.geometry) currentMesh.geometry.dispose();
-            if (currentMesh.material) currentMesh.material.dispose();
-          }
-
-          // Calculate center and normalize
-          geometry.computeBoundingBox();
-          const center = new THREE.Vector3();
-          geometry.boundingBox.getCenter(center);
-          geometry.translate(-center.x, -center.y, -center.z);
-          
-          const boundingBox = geometry.boundingBox;
-          const size = new THREE.Vector3();
-          boundingBox.getSize(size);
-          const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 80 / maxDim;
-          
-          console.log('Mesh scale:', scale, 'maxDim:', maxDim);
-
-          // Material
-          const material = new THREE.MeshPhongMaterial({
-            color: 0x00d9ff,
-            specular: 0x333333,
-            shininess: 100
-          });
-
-          // Create mesh
-          currentMesh = new THREE.Mesh(geometry, material);
-          currentMesh.scale.set(scale, scale, scale);
-          currentMesh.rotation.x = -Math.PI / 2;
-          scene.add(currentMesh);
-
-          // Show controls
-          document.getElementById('previewControls').style.display = 'flex';
-          
-          // Enable chat
-          window.enableChat();
-          
-          // Reset camera
-          resetCamera();
-          
-          console.log('STL rendered successfully');
-        } catch (e) {
-          console.error('Error parsing STL:', e);
-          alert('Error parsing STL: ' + e.message);
-        }
-      };
-      
-      reader.onerror = function(error) {
-        console.error('Error reading file:', error);
-        alert('Error reading file: ' + error);
-      };
-      
-      reader.readAsArrayBuffer(file);
-    }
-
-    function resetCamera() {
-      if (camera && controls) {
-        camera.position.set(0, 50, 100);
-        controls.reset();
-      }
-    }
-
-    function toggleWireframe() {
-      if (currentMesh) {
-        isWireframe = !isWireframe;
-        currentMesh.material.wireframe = isWireframe;
-        var btn = document.getElementById('btn-wireframe');
-        if (btn) btn.classList.toggle('active', isWireframe);
-      }
-    }
-
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      console.log('Page loaded, initializing Three.js...');
-      initThree();
-    });
-
-    // Button event listeners
-    document.getElementById('btn-wireframe').addEventListener('click', toggleWireframe);
-    
-    // ========== CHAT FUNCTIONALITY ==========
-    const chatInput = document.getElementById('chatInput');
-    const chatSend = document.getElementById('chatSend');
-    const chatMessages = document.getElementById('chatMessages');
-    
-    let chatHistory = [];
-    let hasModel = false;
-    
-    // Enable chat when model is loaded
-    window.enableChat = function() {
-      hasModel = true;
-      chatInput.disabled = false;
-      chatSend.disabled = false;
-      // Hide intro placeholder now that a model is loaded
-      var ph = document.getElementById('previewPlaceholder');
-      if (ph) ph.style.display = 'none';
-      // Save original snapshot for "回到原稿"
-      if (currentMesh) {
-        if (originalSnapshot && originalSnapshot.geometry) originalSnapshot.geometry.dispose();
-        originalSnapshot = {
-          geometry: currentMesh.geometry.clone(),
-          position: currentMesh.position.clone(),
-          rotation: currentMesh.rotation.clone(),
-          scale: currentMesh.scale.clone(),
-          color: currentMesh.material.color.getHex()
-        };
-      }
-      chatInput.placeholder = "用机械术语描述修改：通孔Φ8、倒角C2、放大到120mm...";
-      chatMessages.innerHTML = '';
-      addChatMessage('assistant', '⚙️ 机械设计专家已就绪。\n\n请用自然语言描述零件修改需求，或点击快捷操作：', true);
-      
-      // Add quick action buttons
-      showQuickActions();
-    };
-    
-    function showQuickActions() {
-      const quickActions = [
-        { text: '🔘 通孔Φ8', action: () => executeCommand('打一个直径8mm的通孔') },
-        { text: '◻️ 方孔10', action: () => executeCommand('挖10mm方孔') },
-        { text: '📐 倒角C2', action: () => executeCommand('倒角2mm') },
-        { text: '⭕ 圆角R3', action: () => executeCommand('圆角3mm') },
-        { text: '⬆️ 凸台Φ20', action: () => executeCommand('加凸台直径20高5') },
-        { text: '📏 放大20%', action: () => executeCommand('放大20%') },
-        { text: '🔄 旋转90°', action: () => executeCommand('旋转90度') },
-        { text: '🪞 镜像', action: () => executeCommand('左右镜像') },
-        { text: '🔲 线框', action: () => executeCommand('线框') },
-        { text: '📐 分析', action: () => executeCommand('分析') },
-        { text: '↩️ 撤销', action: () => executeCommand('撤销') },
-        { text: '❓ 帮助', action: () => executeCommand('帮助') },
-      ];
-      
-      const msgDiv = chatMessages.querySelector('.chat-message:last-child');
-      if (!msgDiv) return;
-      
-      const btnContainer = document.createElement('div');
-      btnContainer.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;';
-      
-      quickActions.forEach(btn => {
-        const button = document.createElement('button');
-        button.textContent = btn.text;
-        button.style.cssText = 'padding:8px 12px;background:rgba(0,217,255,0.2);border:1px solid rgba(0,217,255,0.4);border-radius:8px;color:#00d9ff;font-size:12px;cursor:pointer;';
-        button.onclick = btn.action;
-        btnContainer.appendChild(button);
-      });
-      
-      msgDiv.appendChild(btnContainer);
-    }
-    
-    function executeCommand(text) {
-      // Add user message
-      addChatMessage('user', text);
-      
-      // Show thinking
-      const thinkingMsg = document.createElement('div');
-      thinkingMsg.className = 'chat-message assistant';
-      thinkingMsg.textContent = '执行中...';
-      chatMessages.appendChild(thinkingMsg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Parse and execute
-      setTimeout(() => {
-        const result = parseLocalModification(text);
-        thinkingMsg.remove();
-        addChatMessage('assistant', result.message);
-      }, 100);
-    }
-    
-    function addChatMessage(role, content, isInit) {
-      // Remove empty state if exists
-      const empty = chatMessages.querySelector('.chat-empty');
-      if (empty) empty.remove();
-      
-      const msg = document.createElement('div');
-      msg.className = 'chat-message ' + role;
-      msg.textContent = content;
-      // Tag with current version counter so we can locate it later
-      if (!isInit && role === 'assistant') {
-        msg.dataset.vid = versionCounter;
-      }
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-    
-    async function sendMessage() {
-      const text = chatInput.value.trim();
-      console.log('Raw input:', text);
-      
-      if (!text || !hasModel) return;
-      
-      // Add user message
-      addChatMessage('user', text);
-      chatInput.value = '';
-      chatHistory.push({ role: 'user', content: text });
-      
-      // Show typing indicator
-      const typingMsg = document.createElement('div');
-      typingMsg.className = 'chat-message assistant';
-      typingMsg.textContent = '🤖 AI 理解中...';
-      typingMsg.id = 'typing-indicator';
-      chatMessages.appendChild(typingMsg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Try local parsing first for known patterns (fast + reliable)
-      const localResult = parseLocalModification(text);
-      
-      // Remove typing indicator
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) indicator.remove();
-      
-      if (localResult.applied !== null && localResult.applied !== undefined) {
-        // Local parsing matched a known command and already applied it
-        addChatMessage('assistant', localResult.message);
-      } else {
-        // No local match — try AI API as fallback
-        try {
-          const aiResult = await callAIAPI(text);
-          if (aiResult.success) {
-            addChatMessage('assistant', aiResult.message);
-          } else {
-            addChatMessage('assistant', localResult.message);
-          }
-        } catch (error) {
-          addChatMessage('assistant', localResult.message);
-        }
-      }
-    }
-    
-    // Call AI API for complex commands
-    async function callAIAPI(command) {
-      const apiConfig = {
-        key: 'sk-chHpp9WHyKVrqrtrb2j4tTg1VBiu4L3sA9vcza6mm35sJv7u',
-        url: 'https://open.palebluedot.ai/v1/chat/completions',
-        model: 'anthropic/claude-opus-4.6'
-      };
-      
-      const systemPrompt = `你是AI机械制造设计专家。用户正在对三维零件模型进行参数化修改。
-所有尺寸单位为 mm，保留2位小数。
-
-你需要将用户的自然语言机械设计指令解析为可执行的操作。
-
-支持的操作类型：
-1. hole — 打孔（通孔/盲孔），参数: shape(circle/square), radius/diameter, depth(可选), position(center/top/bottom)
-2. chamfer — 倒角，参数: size(mm)
-3. fillet — 圆角，参数: radius(mm)
-4. boss — 凸台，参数: diameter, height, position
-5. counterbore — 沉头孔，参数: hole_diameter, counterbore_diameter, counterbore_depth
-6. flange — 法兰，参数: outer_diameter, inner_diameter, thickness, bolt_holes, bolt_diameter
-7. scale — 缩放，参数: ratio 或 percentage 或 target_dimension(目标尺寸mm)
-8. rotate — 旋转，参数: axis(x/y/z), angle(度)
-9. mirror — 镜像，参数: axis(x/y/z)
-10. move — 移动，参数: x/y/z(mm)
-11. stretch — 单轴拉伸，参数: axis, factor
-12. color — 改色，参数: color(hex)
-13. wireframe — 线框模式
-14. solid — 实体模式
-15. transparency — 透明度，参数: opacity(0~1)
-
-返回JSON格式：
-{
-  "operation": "操作类型",
-  "params": {具体参数},
-  "description": "机械专业描述（中文）"
-}
-
-如果无法处理：
-{
-  "operation": "unsupported",
-  "reason": "原因"
-}`;
-
-      const userMessage = `用户命令：${command}
-
-请分析并返回JSON格式的操作指令。`;
-
+      // Clean up related localStorage
       try {
-        // Add 5s timeout to prevent UI from hanging
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(apiConfig.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiConfig.key}`
-          },
-          body: JSON.stringify({
-            model: apiConfig.model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userMessage }
-            ],
-            temperature: 0.3,
-            max_tokens: 500
-          }),
-          signal: controller.signal
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith('stl_project_' + id)) localStorage.removeItem(key);
         });
-        clearTimeout(timeout);
+      } catch (e) {}
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const aiResponse = data.choices?.[0]?.message?.content || '';
-        
-        console.log('AI Response:', aiResponse);
-        
-        // Parse AI response
-        return parseAIResponse(aiResponse, command);
-        
-      } catch (error) {
-        console.error('AI API error:', error);
-        // Immediately fallback to local parsing instead of just returning failure
-        console.log('Falling back to local parsing for:', command);
-        return { success: false, message: 'AI 服务暂时不可用，使用本地解析。' };
-      }
-    }
-    
-    // Parse AI response and execute
-    function parseAIResponse(aiResponse, originalCommand) {
-      try {
-        // Try to extract JSON from AI response
-        let jsonStr = aiResponse;
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          jsonStr = jsonMatch[0];
-        }
-        
-        const operation = JSON.parse(jsonStr);
-        
-        if (operation.operation === 'unsupported') {
-          return { success: true, message: `AI 无法处理：${operation.reason}` };
-        }
-        
-        // Execute the operation
-        const result = executeOperation(operation);
-        
-        return {
-          success: true,
-          message: `✅ ${operation.description}\n\n执行结果：${result}`
-        };
-        
-      } catch (error) {
-        console.error('Parse error:', error);
-        // Fallback to local parsing
-        const localResult = parseLocalModification(originalCommand);
-        return { success: true, message: localResult.message };
-      }
-    }
-    
-    // Execute parsed operation
-    function executeOperation(op) {
-      const { operation, params } = op;
-      console.log('Executing operation:', operation, params);
-      
-      let result = '操作执行完成';
-      
-      switch (operation) {
-        case 'scale':
-          if (currentMesh) {
-            // AI might return: ratio (1.2), percentage (120), factor (1.2), scale_factor, etc.
-            let scaleRatio = params.ratio || params.factor || params.scale_factor;
-            if (params.percentage) {
-              scaleRatio = params.percentage / 100;
-            }
-            if (!scaleRatio) break;
-            // If ratio looks like a percentage (>10), convert it
-            if (scaleRatio > 10) scaleRatio = scaleRatio / 100;
-            scaleRatio = Math.max(0.01, scaleRatio);
-            const s = currentMesh.scale;
-            currentMesh.scale.set(s.x * scaleRatio, s.y * scaleRatio, s.z * scaleRatio);
-            currentMesh.geometry.computeBoundingBox();
-            console.log('Scale applied:', scaleRatio);
-            result = `缩放 ${(scaleRatio * 100).toFixed(0)}%`;
-          }
-          break;
-          
-        case 'rotate':
-          if (params.axis && params.angle && currentMesh) {
-            const angle = params.angle * Math.PI / 180;
-            if (params.axis === 'x') currentMesh.rotation.x += angle;
-            else if (params.axis === 'y') currentMesh.rotation.y += angle;
-            else if (params.axis === 'z') currentMesh.rotation.z += angle;
-            console.log('Rotation applied:', params.axis, params.angle);
-            result = `绕 ${params.axis.toUpperCase()} 轴旋转 ${params.angle}°`;
-          }
-          break;
-          
-        case 'hole':
-        case 'boolean_subtract':
-        case 'boolean_hole':
-          // Handle different hole types from AI
-          // AI might return string expressions like "model_width * 0.2" or numeric values
-          let holeRadius = params.radius || params.diameter / 2 || 5;
-          
-          // If it's a string like "model_width * 0.2", evaluate it
-          if (typeof holeRadius === 'string') {
-            const modelRadius = 40; // Default plate half-width
-            // Parse expressions like "model_width * 0.2" or "model_width/5"
-            const match = holeRadius.match(/model[_\s]?width\s*\*?\s*(\d+\.?\d*)/i);
-            if (match) {
-              holeRadius = modelRadius * (parseFloat(match[1]) || 0.2);
-            } else {
-              holeRadius = parseFloat(holeRadius) || 5;
-            }
-          }
-          
-          const holeShape = params.shape || params.type || params.tool_shape || 'circle';
-          
-          if (holeShape === 'circle' || holeShape === 'cylinder') {
-            applyHole(currentMesh, holeRadius);
-            currentMesh.geometry.computeVertexNormals();
-            console.log('Circle hole applied, radius:', holeRadius);
-            result = `挖了直径 ${holeRadius * 2}mm 的圆孔`;
-          } else if (holeShape === 'box' || holeShape === 'square' || holeShape === 'rectangle') {
-            const size = params.size || params.width || holeRadius * 2;
-            applyBoxHole(currentMesh, size);
-            currentMesh.geometry.computeVertexNormals();
-            console.log('Box hole applied:', size);
-            result = `挖了 ${size}mm 的方孔`;
-          } else if (holeShape === 'sphere' || holeShape === 'spherical') {
-            applySphereHole(currentMesh, holeRadius);
-            currentMesh.geometry.computeVertexNormals();
-            console.log('Sphere hole applied, radius:', holeRadius);
-            result = `挖了半径 ${holeRadius}mm 的球形孔`;
-          } else {
-            // Default to circle hole
-            applyHole(currentMesh, holeRadius);
-            currentMesh.geometry.computeVertexNormals();
-            console.log('Default hole applied, radius:', holeRadius);
-            result = `挖了直径 ${holeRadius * 2}mm 的圆孔`;
-          }
-          break;
-          
-        case 'simplify':
-          if (params.ratio && currentMesh) {
-            simplifyMesh(currentMesh, params.ratio);
-            currentMesh.geometry.computeVertexNormals();
-            console.log('Simplify applied:', params.ratio);
-            result = `简化至 ${params.ratio * 100}%`;
-          }
-          break;
-          
-        case 'smooth':
-          if (currentMesh) {
-            smoothMesh(currentMesh);
-            currentMesh.geometry.computeVertexNormals();
-            result = '已平滑处理';
-          }
-          break;
-          
-        case 'color':
-        case 'change_color':
-          if (currentMesh && params.color) {
-            var colorHex = typeof params.color === 'number' ? params.color : parseInt(params.color.replace('#',''), 16);
-            if (!isNaN(colorHex)) { currentMesh.material.color.setHex(colorHex); result = '颜色已修改'; }
-          }
-          break;
-          
-        case 'mirror':
-        case 'flip':
-          if (currentMesh) {
-            var axis = params.axis || 'x';
-            var ms2 = currentMesh.scale;
-            if (axis === 'x') currentMesh.scale.set(ms2.x * -1, ms2.y, ms2.z);
-            else if (axis === 'y') currentMesh.scale.set(ms2.x, ms2.y * -1, ms2.z);
-            else currentMesh.scale.set(ms2.x, ms2.y, ms2.z * -1);
-            result = axis.toUpperCase() + '轴镜像';
-          }
-          break;
-          
-        case 'move':
-        case 'translate':
-          if (currentMesh) {
-            currentMesh.position.x += (params.x || 0);
-            currentMesh.position.y += (params.y || 0);
-            currentMesh.position.z += (params.z || 0);
-            result = '已移动';
-          }
-          break;
-          
-        case 'stretch':
-          if (currentMesh) {
-            var sa = params.axis || 'y', sf2 = params.factor || 1.5;
-            var ss2 = currentMesh.scale;
-            if (sa === 'x') currentMesh.scale.set(ss2.x * sf2, ss2.y, ss2.z);
-            else if (sa === 'z') currentMesh.scale.set(ss2.x, ss2.y, ss2.z * sf2);
-            else currentMesh.scale.set(ss2.x, ss2.y * sf2, ss2.z);
-            result = sa.toUpperCase() + '轴拉伸 ' + sf2 + 'x';
-          }
-          break;
-          
-        case 'wireframe':
-          if (currentMesh) { currentMesh.material.wireframe = true; result = '线框模式'; }
-          break;
-          
-        case 'solid':
-          if (currentMesh) { currentMesh.material.wireframe = false; result = '实体模式'; }
-          break;
-          
-        case 'transparency':
-        case 'opacity':
-          if (currentMesh) {
-            var op2 = params.opacity || params.value || 0.5;
-            if (op2 > 1) op2 = op2 / 100;
-            currentMesh.material.transparent = true;
-            currentMesh.material.opacity = op2;
-            currentMesh.material.needsUpdate = true;
-            result = '透明度 ' + (op2*100).toFixed(0) + '%';
-          }
-          break;
-          
-        case 'undo':
-          result = undo();
-          break;
-          
-        default:
-          result = '操作 "' + operation + '" 暂不支持';
-      }
-      
-      // Force render update
-      if (renderer && scene && camera) {
-        renderer.render(scene, camera);
-      }
-      
-      // Record to version history
-      if (result !== '操作执行完成') {
-        addVersionRecord(result);
-      }
-      
-      return result;
-    }
-    
-    // Create a simple flat plate for testing hole operations
-    window.createTestPlate = function() {
-      // Remove existing mesh
-      if (currentMesh) {
-        scene.remove(currentMesh);
-        currentMesh.geometry.dispose();
-        currentMesh.material.dispose();
-      }
-      
-      // Create a flat plate (wide, short height) with subdivisions for CSG
-      const width = 80;
-      const height = 10;
-      const depth = 80;
-      
-      const geometry = new THREE.BoxGeometry(width, height, depth, 1, 1, 1);
-      
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x00d9ff,
-        specular: 0x333333,
-        shininess: 100
-      });
-      
-      currentMesh = new THREE.Mesh(geometry, material);
-      scene.add(currentMesh);
-      
-      // Enable chat if not already
-      if (!hasModel) {
-        window.enableChat();
-      }
-      
-      resetCamera();
-      
-      console.log('Test plate created:', width, 'x', height, 'x', depth);
-    };
-    
-    // Color name -> hex mapping
-    const COLOR_MAP = {
-      '红': 0xff0000, '红色': 0xff0000, 'red': 0xff0000,
-      '绿': 0x00cc00, '绿色': 0x00cc00, 'green': 0x00cc00,
-      '蓝': 0x0066ff, '蓝色': 0x0066ff, 'blue': 0x0066ff,
-      '黄': 0xffcc00, '黄色': 0xffcc00, 'yellow': 0xffcc00,
-      '橙': 0xff6600, '橙色': 0xff6600, 'orange': 0xff6600,
-      '紫': 0x9933ff, '紫色': 0x9933ff, 'purple': 0x9933ff,
-      '粉': 0xff66b2, '粉色': 0xff66b2, 'pink': 0xff66b2,
-      '白': 0xffffff, '白色': 0xffffff, 'white': 0xffffff,
-      '黑': 0x222222, '黑色': 0x222222, 'black': 0x222222,
-      '灰': 0x888888, '灰色': 0x888888, 'gray': 0x888888, 'grey': 0x888888,
-      '金': 0xffd700, '金色': 0xffd700, 'gold': 0xffd700,
-      '银': 0xc0c0c0, '银色': 0xc0c0c0, 'silver': 0xc0c0c0,
-      '青': 0x00d9ff, '青色': 0x00d9ff, 'cyan': 0x00d9ff,
-    };
-    
-    function parseLocalModification(text) {
-      console.log('Parsing:', text);
-      if (!currentMesh) return { message: '请先上传模型或创建测试板', applied: null };
-      
-      let actions = [];
-      const numMatch = text.match(/(\d+(?:\.\d+)?)/);
-      const num = numMatch ? parseFloat(numMatch[1]) : null;
-      
-      // ====== UNDO / RESET ======
-      if (/撤销|撤回|undo|回退/.test(text)) {
-        return { message: undo(), applied: true };
-      }
-      if (/重置|还原|reset|恢复原状/.test(text)) {
-        while (undoStack.length > 0) undo();
-        return { message: '已重置到初始状态', applied: true };
-      }
-      
-      // ====== HELP ======
-      if (/帮助|help|指令|命令|怎么用|支持什么/.test(text)) {
-        return {
-          message: '⚙️ 机械设计指令：\n\n' +
-            '【孔加工】通孔Φ8 / 方孔10mm / 沉头孔Φ6深3 / 盲孔\n' +
-            '【边处理】倒角C2 / 圆角R3\n' +
-            '【特征】凸台Φ20高5 / 法兰\n' +
-            '【缩放】放大20% / 缩小50% / 放大到120mm\n' +
-            '【单轴】拉伸Y轴2倍 / 压扁50%\n' +
-            '【旋转】旋转90度 / 绕X轴旋转45度\n' +
-            '【移动】向上移10 / 左移20\n' +
-            '【镜像】左右镜像 / 上下翻转\n' +
-            '【显示】线框 / 实体 / 透明50% / 变红色\n' +
-            '【分析】分析 / 信息\n' +
-            '【其他】复制 / 阵列 / 撤销 / 重置\n\n' +
-            '导出的 STL 文件可用 MeshLab 打开查看',
-          applied: true
-        };
-      }
-      
-      // ====== ANALYSIS ======
-      if (/分析|analyze|几何分析/.test(text)) {
-        autoAnalyzeGeometry();
-        return { message: '已输出几何分析报告', applied: true };
-      }
-      
-      // ====== INFO ======
-      if (/信息|info|尺寸|大小|统计|顶点|面数/.test(text)) {
-        var info = analyzeGeometry(currentMesh);
-        if (!info) return { message: '无法分析', applied: true };
-        return {
-          message: '零件信息：\n' +
-            '• 类型：' + info.bodyType + '\n' +
-            '• 外形：' + info.dimX + ' × ' + info.dimY + ' × ' + info.dimZ + ' mm\n' +
-            '• 体积：' + info.volume + ' mm³\n' +
-            '• 表面积：' + info.surfArea + ' mm²\n' +
-            '• 网格：' + info.triCount + ' 面, ' + info.vertCount + ' 顶点',
-          applied: true
-        };
-      }
-      
-      // Save undo state before any destructive operation
-      saveUndoState();
-      
-      // ====== CHAMFER (倒角) ======
-      if (/倒角|chamfer|C\d/.test(text)) {
-        var cSize = num || 2;
-        // Simulate chamfer by applying small scale bevel effect via CSG
-        // For now, use a simplified approach: cut corners with angled box
-        saveUndoState();
-        applyBoxHole(currentMesh, cSize * 0.5); // simplified
-        return { message: '已应用：倒角 C' + cSize.toFixed(2) + 'mm（简化模拟）', applied: true };
-      }
-      
-      // ====== FILLET (圆角) ======
-      else if (/圆角|fillet|R\d/.test(text) && !/旋转/.test(text)) {
-        var rSize = num || 3;
-        saveUndoState();
-        applySphereHole(currentMesh, rSize * 0.3); // simplified
-        return { message: '已应用：圆角 R' + rSize.toFixed(2) + 'mm（简化模拟）', applied: true };
-      }
-      
-      // ====== BOSS (凸台) ======
-      else if (/凸台|boss|加台|加柱/.test(text)) {
-        saveUndoState();
-        var bDia = 20, bHeight = 5;
-        var dMatch = text.match(/(?:直径|[Φφ])(\d+(?:\.\d+)?)/);
-        var hMatch = text.match(/(?:高|高度)(\d+(?:\.\d+)?)/);
-        if (dMatch) bDia = parseFloat(dMatch[1]);
-        if (hMatch) bHeight = parseFloat(hMatch[1]);
-        // Create boss using CSG union
-        if (currentMesh && scene) {
-          currentMesh.updateMatrixWorld(true);
-          var geo = currentMesh.geometry; geo.computeBoundingBox();
-          var bbMax = geo.boundingBox.max.clone().applyMatrix4(currentMesh.matrixWorld);
-          var bbMin = geo.boundingBox.min.clone().applyMatrix4(currentMesh.matrixWorld);
-          var cx = (bbMax.x + bbMin.x) / 2, topY = bbMax.y;
-          var cz = (bbMax.z + bbMin.z) / 2;
-          var cylGeo = new THREE.CylinderGeometry(bDia/2, bDia/2, bHeight, 24);
-          cylGeo.translate(cx, topY + bHeight/2, cz);
-          // CSG union
-          var toolMesh = new THREE.Mesh(cylGeo);
-          toolMesh.updateMatrixWorld(true);
-          var csgA = threeToCSG(currentMesh);
-          var csgB = threeToCSG(toolMesh);
-          var csgResult = csgA.union(csgB);
-          var newGeo = csgToGeometry(csgResult);
-          currentMesh.geometry.dispose();
-          currentMesh.geometry = newGeo;
-          currentMesh.position.set(0,0,0); currentMesh.rotation.set(0,0,0); currentMesh.scale.set(1,1,1);
-          currentMesh.updateMatrixWorld(true);
-          cylGeo.dispose();
-        }
-        actions.push('加凸台 Φ' + bDia.toFixed(2) + ' × H' + bHeight.toFixed(2) + 'mm');
-      }
-      
-      // ====== COUNTERBORE (沉头孔) ======
-      else if (/沉头|counterbore|沉孔/.test(text)) {
-        saveUndoState();
-        var cbHoleDia = 6, cbDia = 12, cbDepth = 3;
-        var m1 = text.match(/[Φφ](\d+(?:\.\d+)?)/);
-        var m2 = text.match(/深(\d+(?:\.\d+)?)/);
-        if (m1) cbHoleDia = parseFloat(m1[1]);
-        if (m2) cbDepth = parseFloat(m2[1]);
-        cbDia = cbHoleDia * 2;
-        // Through hole + counterbore
-        applyHole(currentMesh, cbHoleDia / 2);
-        // Wider shallow bore
-        if (currentMesh && scene) {
-          currentMesh.updateMatrixWorld(true);
-          var geo2 = currentMesh.geometry; geo2.computeBoundingBox();
-          var bbMax2 = geo2.boundingBox.max.clone().applyMatrix4(currentMesh.matrixWorld);
-          var bbMin2 = geo2.boundingBox.min.clone().applyMatrix4(currentMesh.matrixWorld);
-          var cx2 = (bbMax2.x+bbMin2.x)/2, topY2 = bbMax2.y, cz2 = (bbMax2.z+bbMin2.z)/2;
-          var cbGeo = new THREE.CylinderGeometry(cbDia/2, cbDia/2, cbDepth, 24);
-          cbGeo.translate(cx2, topY2 - cbDepth/2, cz2);
-          csgSubtract(currentMesh, cbGeo);
-          cbGeo.dispose();
-        }
-        actions.push('沉头孔 Φ' + cbHoleDia.toFixed(2) + ' / Φ' + cbDia.toFixed(2) + ' 深' + cbDepth.toFixed(2) + 'mm');
-      }
-      
-      // ====== Φ notation for holes: "Φ8通孔" "直径10通孔" ======
-      else if (/[Φφ]\d|直径.*孔|通孔|盲孔/.test(text)) {
-        var holeDia = num || 8;
-        var diaMatch2 = text.match(/[Φφ](\d+(?:\.\d+)?)/);
-        if (diaMatch2) holeDia = parseFloat(diaMatch2[1]);
-        var holeR = holeDia / 2;
-        applyHole(currentMesh, holeR);
-        var holeType = /盲/.test(text) ? '盲孔' : '通孔';
-        actions.push(holeType + ' Φ' + holeDia.toFixed(2) + 'mm');
-      }
-      
-      // ====== BOOLEAN OPERATIONS (generic) ======
-      else if (/方.*洞|方.*孔|方形.*孔/.test(text)) {
-        applyBoxHole(currentMesh, num || 10);
-        actions.push('方孔 ' + (num || 10) + 'mm');
-      }
-      else if (/球.*洞|球.*孔|球形.*孔/.test(text)) {
-        const r = num ? num / 2 : 10;
-        applySphereHole(currentMesh, r);
-        actions.push('球形孔 R' + r + 'mm');
-      }
-      else if ((/挖|打.*洞|穿.*洞|钻.*孔|hole|punch/.test(text)) && (/洞|孔|hole/.test(text))) {
-        const r = num ? num / 2 : 5;
-        applyHole(currentMesh, r);
-        actions.push('圆孔 Φ' + (r*2) + 'mm');
-      }
-      
-      // ====== COLOR ======
-      else if (/颜色|换色|改色|变色|涂|染|color/.test(text) || Object.keys(COLOR_MAP).some(function(c) { return text.includes(c); })) {
-        var hex = null;
-        var hexMatch2 = text.match(/#([0-9a-fA-F]{6})/);
-        if (hexMatch2) { hex = parseInt(hexMatch2[1], 16); }
-        else { for (var cn in COLOR_MAP) { if (text.includes(cn)) { hex = COLOR_MAP[cn]; break; } } }
-        if (hex !== null) {
-          currentMesh.material.color.setHex(hex);
-          actions.push('颜色已改为 #' + hex.toString(16).padStart(6, '0'));
-        } else {
-          actions.push('未识别颜色，支持：红/绿/蓝/黄/橙/紫/粉/白/黑/灰/金/银/青 或 #hex');
-        }
-      }
-      
-      // ====== TRANSPARENCY ======
-      else if (/不透明|取消透明|opaque/.test(text)) {
-        currentMesh.material.transparent = false;
-        currentMesh.material.opacity = 1;
-        currentMesh.material.needsUpdate = true;
-        actions.push('已取消透明');
-      }
-      else if (/透明|半透明|transparency|opacity/.test(text)) {
-        var op = num ? Math.min(num, 100) / 100 : 0.5;
-        currentMesh.material.transparent = true;
-        currentMesh.material.opacity = op;
-        currentMesh.material.needsUpdate = true;
-        actions.push('透明度设为 ' + (op * 100).toFixed(0) + '%');
-      }
-      
-      // ====== WIREFRAME / SOLID ======
-      else if (/线框|wireframe/.test(text)) {
-        currentMesh.material.wireframe = true;
-        actions.push('已切换为线框模式');
-      }
-      else if (/实体|solid|填充/.test(text)) {
-        currentMesh.material.wireframe = false;
-        actions.push('已切换为实体模式');
-      }
-      
-      // ====== MIRROR / FLIP ======
-      else if (/镜像|翻转|flip|mirror/.test(text)) {
-        var ms = currentMesh.scale;
-        if (/左右|水平|x/i.test(text)) { currentMesh.scale.set(ms.x * -1, ms.y, ms.z); actions.push('已左右镜像'); }
-        else if (/上下|垂直|y/i.test(text)) { currentMesh.scale.set(ms.x, ms.y * -1, ms.z); actions.push('已上下翻转'); }
-        else if (/前后|z/i.test(text)) { currentMesh.scale.set(ms.x, ms.y, ms.z * -1); actions.push('已前后镜像'); }
-        else { currentMesh.scale.set(ms.x * -1, ms.y, ms.z); actions.push('已左右镜像'); }
-      }
-      
-      // ====== MOVE / TRANSLATE ======
-      else if (/移动|平移|move|translate|向[上下左右前后]|往[上下左右前后]/.test(text)) {
-        var d = num || 10;
-        if (/上|up/i.test(text)) { currentMesh.position.y += d; actions.push('向上移动 ' + d); }
-        else if (/下|down/i.test(text)) { currentMesh.position.y -= d; actions.push('向下移动 ' + d); }
-        else if (/左|left/i.test(text)) { currentMesh.position.x -= d; actions.push('向左移动 ' + d); }
-        else if (/右|right/i.test(text)) { currentMesh.position.x += d; actions.push('向右移动 ' + d); }
-        else if (/前|forward/i.test(text)) { currentMesh.position.z -= d; actions.push('向前移动 ' + d); }
-        else if (/后|back/i.test(text)) { currentMesh.position.z += d; actions.push('向后移动 ' + d); }
-        else { actions.push('请指定方向：上/下/左/右/前/后'); }
-      }
-      
-      // ====== STRETCH / SQUASH ======
-      else if (/拉伸|拉长|stretch|elongate/.test(text)) {
-        var sf = num ? (num > 10 ? num / 100 : num) : 1.5;
-        var ss = currentMesh.scale;
-        if (/x/i.test(text) || /宽/.test(text)) { currentMesh.scale.set(ss.x * sf, ss.y, ss.z); actions.push('X轴拉伸 ' + sf + 'x'); }
-        else if (/z/i.test(text) || /深|长/.test(text)) { currentMesh.scale.set(ss.x, ss.y, ss.z * sf); actions.push('Z轴拉伸 ' + sf + 'x'); }
-        else { currentMesh.scale.set(ss.x, ss.y * sf, ss.z); actions.push('Y轴拉伸 ' + sf + 'x'); }
-      }
-      else if (/压扁|压平|flatten|squash/.test(text)) {
-        var ff = num ? Math.min(num, 100) / 100 : 0.5;
-        var fs = currentMesh.scale;
-        if (/x/i.test(text)) { currentMesh.scale.set(fs.x * ff, fs.y, fs.z); actions.push('X轴压扁到 ' + (ff*100).toFixed(0) + '%'); }
-        else if (/z/i.test(text)) { currentMesh.scale.set(fs.x, fs.y, fs.z * ff); actions.push('Z轴压扁到 ' + (ff*100).toFixed(0) + '%'); }
-        else { currentMesh.scale.set(fs.x, fs.y * ff, fs.z); actions.push('Y轴压扁到 ' + (ff*100).toFixed(0) + '%'); }
-      }
-      
-      // ====== SMOOTH / SIMPLIFY ======
-      else if (/平滑|smooth|光滑/.test(text)) {
-        smoothMesh(currentMesh);
-        actions.push('已平滑处理');
-      }
-      else if (/简化|simplify|reduce/.test(text)) {
-        var sr = num ? num / 100 : 0.5;
-        simplifyMesh(currentMesh, sr);
-        actions.push('已简化到 ' + (sr * 100).toFixed(0) + '%');
-      }
-      
-      // ====== DUPLICATE / ARRAY ======
-      else if (/复制|克隆|duplicate|clone/.test(text)) {
-        var cl = currentMesh.clone(); cl.material = currentMesh.material.clone(); cl.position.x += 50; scene.add(cl);
-        actions.push('已复制模型（偏移 +50）');
-      }
-      else if (/阵列|array|排列/.test(text)) {
-        var cnt = num ? Math.min(num, 10) : 3;
-        for (var ai = 1; ai <= cnt; ai++) { var ac = currentMesh.clone(); ac.material = currentMesh.material.clone(); ac.position.x += 50 * ai; scene.add(ac); }
-        actions.push('已创建 ' + cnt + ' 个副本阵列');
-      }
-      
-      // ====== SCALE (uniform) ======
-      else if (text.includes('%') || /放大|缩小|scale/.test(text) || text.includes('倍')) {
-        var scaleMatch2 = text.match(/(\d+(?:\.\d+)?)\s*%/);
-        var bigMatch2 = text.match(/(\d+(?:\.\d+)?)\s*倍/);
-        if (scaleMatch2) {
-          var pct = parseFloat(scaleMatch2[1]);
-          var ratio;
-          if (/放大|enlarge|bigger|larger/.test(text)) { ratio = 1 + pct / 100; }
-          else if (/缩小|shrink|smaller/.test(text)) { ratio = 1 - pct / 100; }
-          else { ratio = pct / 100; }
-          ratio = Math.max(0.01, ratio);
-          var us = currentMesh.scale;
-          currentMesh.scale.set(us.x * ratio, us.y * ratio, us.z * ratio);
-          actions.push('缩放 ' + (ratio * 100).toFixed(0) + '%');
-        } else if (bigMatch2) {
-          var mult = parseFloat(bigMatch2[1]);
-          var us2 = currentMesh.scale;
-          currentMesh.scale.set(us2.x * mult, us2.y * mult, us2.z * mult);
-          actions.push('放大 ' + bigMatch2[1] + ' 倍');
-        }
-      }
-      
-      // ====== ROTATION ======
-      else if (/[xXyYzZ]轴/.test(text) && /旋转|转/.test(text)) {
-        var rdeg = num || 90;
-        var rrad = rdeg * Math.PI / 180;
-        if (/[xX]轴/.test(text)) { currentMesh.rotation.x += rrad; actions.push('绕X轴旋转 ' + rdeg + '°'); }
-        else if (/[yY]轴/.test(text)) { currentMesh.rotation.y += rrad; actions.push('绕Y轴旋转 ' + rdeg + '°'); }
-        else if (/[zZ]轴/.test(text)) { currentMesh.rotation.z += rrad; actions.push('绕Z轴旋转 ' + rdeg + '°'); }
-      }
-      else if (/旋转|rotate/.test(text) && num) {
-        currentMesh.rotation.y += num * Math.PI / 180;
-        actions.push('旋转 ' + num + '°');
-      }
-      
-      // ====== FALLBACK ======
-      if (actions.length === 0) {
-        // Remove unused undo state
-        if (undoStack.length > 0) { var unused = undoStack.pop(); unused.geometry.dispose(); }
-        return { message: '未识别：' + text + '\n\n输入"帮助"查看所有支持的指令', applied: null };
-      }
-      
-      // Record to version history
-      addVersionRecord(actions.join('，'));
-      
-      return { message: '已应用：' + actions.join('，'), applied: true };
-    }
-    
-    // ========== STL EXPORT ==========
-    
-    // Export current mesh as STL file for download
-    window.exportSTL = function() {
-      if (!currentMesh) {
-        alert('未加载零件模型');
-        return;
-      }
-      
-      const geometry = currentMesh.geometry;
-      const stlData = generateBinarySTL(geometry);
-      
-      // Create blob and download
-      const blob = new Blob([stlData], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'part_' + Date.now() + '.stl';
-      link.click();
-      URL.revokeObjectURL(url);
-      
-      var info = analyzeGeometry(currentMesh);
-      var sizeStr = info ? info.dimX + ' x ' + info.dimY + ' x ' + info.dimZ + ' mm' : '';
-      addChatMessage('assistant', '已导出 STL（单位: mm）\n尺寸: ' + sizeStr + '\n\n可用 MeshLab 打开查看和进一步编辑');
-      
-      console.log('STL exported, size:', stlData.byteLength, 'bytes');
-    };
-    
-    // Generate binary STL from Three.js geometry
-    function generateBinarySTL(geometry) {
-      const positionAttr = geometry.attributes.position;
-      const triangleCount = positionAttr.count / 3;
-      
-      // Binary STL format:
-      // 80 bytes header + 4 bytes triangle count + 50 bytes per triangle
-      const bufferSize = 80 + 4 + triangleCount * 50;
-      const buffer = new ArrayBuffer(bufferSize);
-      const view = new DataView(buffer);
-      
-      // Write header (80 bytes, filled with 0)
-      for (let i = 0; i < 80; i++) {
-        view.setUint8(i, 0);
-      }
-      
-      // Write triangle count
-      view.setUint32(80, triangleCount, true);
-      
-      // Write triangles
-      let offset = 84;
-      for (let i = 0; i < triangleCount; i++) {
-        const i1 = i * 3;
-        const i2 = i * 3 + 1;
-        const i3 = i * 3 + 2;
-        
-        const v1 = new THREE.Vector3().fromBufferAttribute(positionAttr, i1);
-        const v2 = new THREE.Vector3().fromBufferAttribute(positionAttr, i2);
-        const v3 = new THREE.Vector3().fromBufferAttribute(positionAttr, i3);
-        
-        // Calculate normal
-        const normal = new THREE.Vector3();
-        const edge1 = new THREE.Vector3().subVectors(v2, v1);
-        const edge2 = new THREE.Vector3().subVectors(v3, v1);
-        normal.crossVectors(edge1, edge2);
-        normal.normalize();
-        
-        // Write normal (12 bytes)
-        view.setFloat32(offset, normal.x, true); offset += 4;
-        view.setFloat32(offset, normal.y, true); offset += 4;
-        view.setFloat32(offset, normal.z, true); offset += 4;
-        
-        // Write v1 (12 bytes)
-        view.setFloat32(offset, v1.x, true); offset += 4;
-        view.setFloat32(offset, v1.y, true); offset += 4;
-        view.setFloat32(offset, v1.z, true); offset += 4;
-        
-        // Write v2 (12 bytes)
-        view.setFloat32(offset, v2.x, true); offset += 4;
-        view.setFloat32(offset, v2.y, true); offset += 4;
-        view.setFloat32(offset, v2.z, true); offset += 4;
-        
-        // Write v3 (12 bytes)
-        view.setFloat32(offset, v3.x, true); offset += 4;
-        view.setFloat32(offset, v3.y, true); offset += 4;
-        view.setFloat32(offset, v3.z, true); offset += 4;
-        
-        // Write attribute byte count (2 bytes, always 0)
-        view.setUint16(offset, 0, true); offset += 2;
-      }
-      
-      return buffer;
-    }
-    
-    // ========== CSG BRIDGE: Three.js <-> CSG.js ==========
-    
-    // Convert Three.js Mesh to CSG object
-    function threeToCSG(mesh) {
-      const geo = mesh.geometry;
-      const posAttr = geo.attributes.position;
-      const indexAttr = geo.index;
-      const polygons = [];
-      
-      // Apply mesh transforms (scale, rotation, translation) to vertices
-      const matrix = mesh.matrixWorld;
-      mesh.updateMatrixWorld(true);
-      
-      const triCount = indexAttr ? indexAttr.count / 3 : posAttr.count / 3;
-      
-      for (let i = 0; i < triCount; i++) {
-        const vertices = [];
-        for (let j = 0; j < 3; j++) {
-          const idx = indexAttr ? indexAttr.getX(i * 3 + j) : i * 3 + j;
-          const v = new THREE.Vector3(
-            posAttr.getX(idx),
-            posAttr.getY(idx),
-            posAttr.getZ(idx)
-          );
-          // Apply mesh world transform so CSG operates in world space
-          v.applyMatrix4(matrix);
-          vertices.push(new CSG.Vertex(
-            new CSG.Vector(v.x, v.y, v.z),
-            new CSG.Vector(0, 0, 0)
-          ));
-        }
-        // Skip degenerate triangles
-        const a = vertices[0].pos, b = vertices[1].pos, c = vertices[2].pos;
-        const ab = b.minus(a), ac = c.minus(a);
-        if (ab.cross(ac).length() > 1e-10) {
-          polygons.push(new CSG.Polygon(vertices));
-        }
-      }
-      return CSG.fromPolygons(polygons);
-    }
-    
-    // Convert CSG object back to Three.js BufferGeometry
-    function csgToGeometry(csg) {
-      const positions = [];
-      const polys = csg.toPolygons();
-      
-      for (const poly of polys) {
-        // Triangulate polygon (fan from first vertex)
-        for (let i = 1; i < poly.vertices.length - 1; i++) {
-          const a = poly.vertices[0].pos;
-          const b = poly.vertices[i].pos;
-          const c = poly.vertices[i + 1].pos;
-          positions.push(a.x, a.y, a.z);
-          positions.push(b.x, b.y, b.z);
-          positions.push(c.x, c.y, c.z);
-        }
-      }
-      
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      geometry.computeVertexNormals();
-      return geometry;
-    }
-    
-    // Perform CSG subtraction: mesh - tool, replace mesh geometry in-place
-    function csgSubtract(mesh, toolGeometry) {
-      if (!mesh || !mesh.geometry) {
-        console.log('csgSubtract: no mesh');
-        return;
-      }
-      
-      console.log('CSG subtract starting...');
-      const t0 = performance.now();
-      
-      // Create a temporary mesh for the tool so we can apply transforms
-      const toolMesh = new THREE.Mesh(toolGeometry);
-      // Put tool in same coordinate space as mesh
-      toolMesh.position.copy(mesh.position);
-      toolMesh.rotation.set(0, 0, 0);
-      toolMesh.scale.set(1, 1, 1);
-      toolMesh.updateMatrixWorld(true);
-      
-      const csgA = threeToCSG(mesh);
-      const csgB = threeToCSG(toolMesh);
-      const csgResult = csgA.subtract(csgB);
-      
-      const newGeo = csgToGeometry(csgResult);
-      
-      // Replace geometry
-      mesh.geometry.dispose();
-      mesh.geometry = newGeo;
-      
-      // Reset mesh transforms since CSG was done in world space
-      mesh.position.set(0, 0, 0);
-      mesh.rotation.set(0, 0, 0);
-      mesh.scale.set(1, 1, 1);
-      mesh.updateMatrixWorld(true);
-      
-      const dt = (performance.now() - t0).toFixed(0);
-      const triCount = newGeo.attributes.position.count / 3;
-      console.log(`CSG subtract done in ${dt}ms, ${triCount} triangles`);
-    }
-    
-    // ========== BOOLEAN OPERATION FUNCTIONS ==========
-    
-    // Punch a cylinder hole through the mesh center (Y axis)
-    function applyHole(mesh, radius) {
-      if (!mesh || !mesh.geometry) return;
-      
-      mesh.updateMatrixWorld(true);
-      const geo = mesh.geometry;
-      geo.computeBoundingBox();
-      
-      // Get bounds in world space
-      const bbMin = geo.boundingBox.min.clone().applyMatrix4(mesh.matrixWorld);
-      const bbMax = geo.boundingBox.max.clone().applyMatrix4(mesh.matrixWorld);
-      const center = new THREE.Vector3().addVectors(bbMin, bbMax).multiplyScalar(0.5);
-      const sizeX = bbMax.x - bbMin.x;
-      const sizeY = bbMax.y - bbMin.y;
-      const sizeZ = bbMax.z - bbMin.z;
-      
-      // Default hole radius = 20% of smallest XZ dimension
-      const holeRadius = radius || Math.min(sizeX, sizeZ) * 0.2;
-      const holeHeight = sizeY + 2; // extend beyond model
-      
-      console.log('Punching cylinder hole:', { holeRadius, holeHeight, center: center.toArray() });
-      
-      // Create cylinder tool aligned along Y axis, centered at model center
-      const cylGeo = new THREE.CylinderGeometry(holeRadius, holeRadius, holeHeight, 24);
-      cylGeo.translate(center.x, center.y, center.z);
-      
-      csgSubtract(mesh, cylGeo);
-      cylGeo.dispose();
-    }
-    
-    // Punch a box hole through the mesh center
-    function applyBoxHole(mesh, size) {
-      if (!mesh || !mesh.geometry) return;
-      
-      mesh.updateMatrixWorld(true);
-      const geo = mesh.geometry;
-      geo.computeBoundingBox();
-      
-      const bbMin = geo.boundingBox.min.clone().applyMatrix4(mesh.matrixWorld);
-      const bbMax = geo.boundingBox.max.clone().applyMatrix4(mesh.matrixWorld);
-      const center = new THREE.Vector3().addVectors(bbMin, bbMax).multiplyScalar(0.5);
-      const sizeY = bbMax.y - bbMin.y;
-      
-      const holeSize = size || 10;
-      const holeHeight = sizeY + 2;
-      
-      console.log('Punching box hole:', { holeSize, holeHeight });
-      
-      const boxGeo = new THREE.BoxGeometry(holeSize, holeHeight, holeSize);
-      boxGeo.translate(center.x, center.y, center.z);
-      
-      csgSubtract(mesh, boxGeo);
-      boxGeo.dispose();
-    }
-    
-    // Punch a spherical hole at the mesh center
-    function applySphereHole(mesh, radius) {
-      if (!mesh || !mesh.geometry) return;
-      
-      mesh.updateMatrixWorld(true);
-      const geo = mesh.geometry;
-      geo.computeBoundingBox();
-      
-      const bbMin = geo.boundingBox.min.clone().applyMatrix4(mesh.matrixWorld);
-      const bbMax = geo.boundingBox.max.clone().applyMatrix4(mesh.matrixWorld);
-      const center = new THREE.Vector3().addVectors(bbMin, bbMax).multiplyScalar(0.5);
-      const sizeX = bbMax.x - bbMin.x;
-      const sizeZ = bbMax.z - bbMin.z;
-      
-      const holeRadius = radius || Math.min(sizeX, sizeZ) * 0.25;
-      
-      console.log('Punching sphere hole:', { holeRadius });
-      
-      const sphereGeo = new THREE.SphereGeometry(holeRadius, 16, 12);
-      sphereGeo.translate(center.x, center.y, center.z);
-      
-      csgSubtract(mesh, sphereGeo);
-      sphereGeo.dispose();
-    }
-    
-    // Simplify mesh by reducing vertices
-    function simplifyMesh(mesh, ratio) {
-      if (!mesh || !mesh.geometry) return;
-      
-      const geometry = mesh.geometry;
-      const positionAttr = geometry.attributes.position;
-      
-      // Simple subsampling - keep every Nth vertex
-      const step = Math.max(1, Math.floor(1 / ratio));
-      const newPositions = [];
-      
-      for (let i = 0; i < positionAttr.count; i += step) {
-        newPositions.push(positionAttr.getX(i));
-        newPositions.push(positionAttr.getY(i));
-        newPositions.push(positionAttr.getZ(i));
-      }
-      
-      // Create new geometry with fewer vertices
-      const newGeometry = new THREE.BufferGeometry();
-      newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3));
-      newGeometry.computeVertexNormals();
-      
-      // Replace mesh
-      mesh.geometry = newGeometry;
-    }
-    
-    // Smooth mesh by averaging vertex normals
-    function smoothMesh(mesh) {
-      if (!mesh || !mesh.geometry) return;
-      
-      mesh.geometry.computeVertexNormals();
-      console.log('Mesh smoothed');
-    }
-    
-    // ========== GEOMETRY ANALYSIS ==========
-    function analyzeGeometry(mesh) {
-      if (!mesh || !mesh.geometry) return null;
-      var geo = mesh.geometry;
-      var s = mesh.scale;
-      
-      geo.computeBoundingBox();
-      var bb = geo.boundingBox;
-      var size = new THREE.Vector3();
-      bb.getSize(size);
-      
-      // Actual dimensions in mm (geometry * scale)
-      var dimX = (size.x * Math.abs(s.x)).toFixed(2);
-      var dimY = (size.y * Math.abs(s.y)).toFixed(2);
-      var dimZ = (size.z * Math.abs(s.z)).toFixed(2);
-      var dims = [parseFloat(dimX), parseFloat(dimY), parseFloat(dimZ)].sort(function(a,b){return b-a;});
-      
-      var posAttr = geo.attributes.position;
-      var vertCount = posAttr.count;
-      var triCount = geo.index ? geo.index.count / 3 : vertCount / 3;
-      
-      // Estimate volume via signed tetrahedra method
-      var volume = 0;
-      for (var i = 0; i < vertCount; i += 3) {
-        var ax = posAttr.getX(i) * s.x, ay = posAttr.getY(i) * s.y, az = posAttr.getZ(i) * s.z;
-        var bx = posAttr.getX(i+1) * s.x, by = posAttr.getY(i+1) * s.y, bz = posAttr.getZ(i+1) * s.z;
-        var cx = posAttr.getX(i+2) * s.x, cy = posAttr.getY(i+2) * s.y, cz = posAttr.getZ(i+2) * s.z;
-        volume += (ax*(by*cz - bz*cy) + bx*(cy*az - cz*ay) + cx*(ay*bz - az*by)) / 6;
-      }
-      volume = Math.abs(volume);
-      
-      // Estimate surface area
-      var surfArea = 0;
-      for (var i = 0; i < vertCount; i += 3) {
-        var v0 = new THREE.Vector3(posAttr.getX(i)*s.x, posAttr.getY(i)*s.y, posAttr.getZ(i)*s.z);
-        var v1 = new THREE.Vector3(posAttr.getX(i+1)*s.x, posAttr.getY(i+1)*s.y, posAttr.getZ(i+1)*s.z);
-        var v2 = new THREE.Vector3(posAttr.getX(i+2)*s.x, posAttr.getY(i+2)*s.y, posAttr.getZ(i+2)*s.z);
-        var e1 = new THREE.Vector3().subVectors(v1, v0);
-        var e2 = new THREE.Vector3().subVectors(v2, v0);
-        surfArea += e1.cross(e2).length() * 0.5;
-      }
-      
-      // Determine body type heuristic
-      var ratio = dims[0] / (dims[2] || 0.01);
-      var bodyType = '块状体';
-      if (ratio > 5) bodyType = '薄板/片状体';
-      else if (ratio > 2.5 && dims[1] / dims[2] < 1.5) bodyType = '长条/轴类';
-      
-      // Check if roughly cylindrical (circular cross-section)
-      var center = new THREE.Vector3();
-      bb.getCenter(center);
-      var rSum = 0, rCount = 0;
-      for (var i = 0; i < Math.min(vertCount, 3000); i++) {
-        var dx = posAttr.getX(i) * s.x - center.x * s.x;
-        var dz = posAttr.getZ(i) * s.z - center.z * s.z;
-        var r = Math.sqrt(dx*dx + dz*dz);
-        if (r > 0.1) { rSum += r; rCount++; }
-      }
-      var avgR = rCount > 0 ? rSum / rCount : 0;
-      var rVariance = 0;
-      for (var i = 0; i < Math.min(vertCount, 3000); i++) {
-        var dx = posAttr.getX(i) * s.x - center.x * s.x;
-        var dz = posAttr.getZ(i) * s.z - center.z * s.z;
-        var r = Math.sqrt(dx*dx + dz*dz);
-        if (r > 0.1) rVariance += (r - avgR) * (r - avgR);
-      }
-      rVariance = rCount > 1 ? Math.sqrt(rVariance / rCount) / avgR : 1;
-      if (rVariance < 0.15 && avgR > 1) bodyType = '圆柱体/回转体 (估算直径 ' + (avgR * 2).toFixed(2) + 'mm)';
-      
-      return {
-        dimX: dimX, dimY: dimY, dimZ: dimZ,
-        dims: dims,
-        bodyType: bodyType,
-        triCount: Math.floor(triCount),
-        vertCount: vertCount,
-        volume: volume.toFixed(2),
-        surfArea: surfArea.toFixed(2),
-        avgRadius: avgR > 1 ? avgR.toFixed(2) : null
-      };
-    }
-    
-    // Auto-analyze and post to chat after file load
-    function autoAnalyzeGeometry() {
-      if (!currentMesh) return;
-      var info = analyzeGeometry(currentMesh);
-      if (!info) return;
-      
-      var msg = '📐 零件几何分析报告\n\n'
-        + '【主体结构】' + info.bodyType + '\n'
-        + '【外形尺寸】' + info.dims[0].toFixed(2) + ' × ' + info.dims[1].toFixed(2) + ' × ' + info.dims[2].toFixed(2) + ' mm\n'
-        + '    (X=' + info.dimX + '  Y=' + info.dimY + '  Z=' + info.dimZ + ')\n'
-        + '【体积】' + info.volume + ' mm³\n'
-        + '【表面积】' + info.surfArea + ' mm²\n'
-        + '【网格】' + info.triCount + ' 三角面, ' + info.vertCount + ' 顶点\n';
-      
-      if (info.avgRadius) {
-        msg += '【估算半径】' + info.avgRadius + ' mm\n';
-      }
-      
-      msg += '\n可用自然语言描述修改需求，例如：\n'
-        + '• "在顶面中心加一个直径8mm的通孔"\n'
-        + '• "四边倒角R2"\n'
-        + '• "整体放大到长度120mm"\n'
-        + '• 输入"帮助"查看完整指令列表';
-      
-      addChatMessage('assistant', msg);
-    }
-    
-    function applySTLModification(result) {
-      if (!result || !currentMesh) {
-        return { message: 'No model loaded to modify' };
-      }
-      
-      // Result could be text describing what to do, or actual parameters
-      return parseLocalModification(result.instruction || result);
-    }
-    
-    // Apply modification to the mesh
-    window.applyMeshModification = function(mod) {
-      if (!currentMesh || !mod) return;
-      
-      if (mod.scale && mod.scale !== 1) {
-        currentMesh.scale.set(mod.scale, mod.scale, mod.scale);
-      }
-      if (mod.rotation) {
-        if (mod.rotation.x) currentMesh.rotation.x += mod.rotation.x;
-        if (mod.rotation.y) currentMesh.rotation.y += mod.rotation.y;
-        if (mod.rotation.z) currentMesh.rotation.z += mod.rotation.z;
-      }
-    };
-    
-    // ========== EVENT LISTENERS ==========
-    chatSend.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    // STL Upload
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
-    const loading = document.getElementById('loading');
-    
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
-    uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleSTLFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length) handleSTLFile(e.target.files[0]);
-    });
-    
-    // Also allow drag onto preview area
-    const previewArea = document.getElementById('previewArea');
-    previewArea.addEventListener('dragover', (e) => e.preventDefault());
-    previewArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      if (e.dataTransfer.files.length) handleSTLFile(e.dataTransfer.files[0]);
-    });
-
-    // Allow clicking the preview placeholder to upload
-    const previewPlaceholder = document.getElementById('previewPlaceholder');
-    if (previewPlaceholder) {
-      previewPlaceholder.style.cursor = 'pointer';
-      previewPlaceholder.addEventListener('click', () => fileInput.click());
+      renderProjects();
     }
 
-    // Current active file id
-    let activeFileId = null;
+    function renameProject(id, e) {
+      e.stopPropagation();
+      const card = document.querySelector('.card[data-id="' + id + '"]');
+      if (!card) return;
+      const nameEl = card.querySelector('.card-name');
+      const oldName = nameEl.textContent;
 
-    function handleSTLFile(file) {
-      var name = file.name.toLowerCase();
-      var isSTL = name.endsWith('.stl');
-      var isSTEP = name.endsWith('.step') || name.endsWith('.stp');
-      
-      if (!isSTL && !isSTEP) {
-        alert('请上传 .stl / .step / .stp 格式文件');
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        alert('文件大小不能超过 10MB');
-        return;
-      }
-      
-      loading.classList.add('show');
-      
-      // Assign a new file ID immediately
-      var newFileId = Date.now().toString(36);
-      activeFileId = newFileId;
-      
-      if (isSTEP) {
-        loadSTEP(file, function() {
-          loading.classList.remove('show');
-          clearVersionHistory();
-          saveFileToHistory(file, newFileId);
-          autoAnalyzeGeometry();
-        });
-      } else {
-        loadSTL(file);
-        loading.classList.remove('show');
-        clearVersionHistory();
-        saveFileToHistory(file, newFileId);
-        setTimeout(autoAnalyzeGeometry, 200);
-      }
-    }
-    
-    // Load STEP file using occt-import-js
-    function loadSTEP(file, callback) {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var buffer = new Uint8Array(e.target.result);
-        
-        occtimportjs().then(function(occt) {
-          var result = occt.ReadStepFile(buffer, null);
-          console.log('STEP parsed, meshes:', result.meshes.length);
-          
-          if (result.meshes.length === 0) {
-            alert('STEP 文件中未找到几何体');
-            if (callback) callback();
-            return;
-          }
-          
-          // Remove old mesh
-          if (currentMesh) {
-            scene.remove(currentMesh);
-            if (currentMesh.geometry) currentMesh.geometry.dispose();
-            if (currentMesh.material) currentMesh.material.dispose();
-          }
-          
-          // Merge all meshes from STEP into one geometry
-          var positions = [];
-          var indices = [];
-          var indexOffset = 0;
-          
-          for (var mi = 0; mi < result.meshes.length; mi++) {
-            var m = result.meshes[mi];
-            var pos = m.attributes.position.array;
-            var idx = m.index.array;
-            
-            for (var pi = 0; pi < pos.length; pi++) {
-              positions.push(pos[pi]);
-            }
-            for (var ii = 0; ii < idx.length; ii++) {
-              indices.push(idx[ii] + indexOffset);
-            }
-            indexOffset += pos.length / 3;
-          }
-          
-          var geometry = new THREE.BufferGeometry();
-          geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-          geometry.setIndex(indices);
-          geometry.computeVertexNormals();
-          geometry.computeBoundingBox();
-          
-          var center = new THREE.Vector3();
-          geometry.boundingBox.getCenter(center);
-          geometry.translate(-center.x, -center.y, -center.z);
-          
-          var size = new THREE.Vector3();
-          geometry.boundingBox.getSize(size);
-          var maxDim = Math.max(size.x, size.y, size.z);
-          var scale = 80 / maxDim;
-          
-          var material = new THREE.MeshPhongMaterial({
-            color: 0x00d9ff, specular: 0x333333, shininess: 100
-          });
-          
-          currentMesh = new THREE.Mesh(geometry, material);
-          currentMesh.scale.set(scale, scale, scale);
-          scene.add(currentMesh);
-          
-          document.getElementById('previewControls').style.display = 'flex';
-          window.enableChat();
-          resetCamera();
-          
-          console.log('STEP loaded, triangles:', indices.length / 3);
-          if (callback) callback();
-          
-        }).catch(function(err) {
-          console.error('STEP parse error:', err);
-          alert('STEP 文件解析失败: ' + err.message);
-          if (callback) callback();
-        });
-      };
-      reader.readAsArrayBuffer(file);
-    }
+      const input = document.createElement('input');
+      input.className = 'card-name-input';
+      input.value = oldName;
+      input.maxLength = 50;
+      nameEl.replaceWith(input);
+      input.focus();
+      input.select();
 
-    // ========== UPLOAD HISTORY (localStorage) ==========
-    const FILE_HISTORY_KEY = 'stl_upload_history';
-
-    function getFileHistory() {
-      try {
-        return JSON.parse(localStorage.getItem(FILE_HISTORY_KEY) || '[]');
-      } catch (e) { return []; }
-    }
-
-    function saveFileToHistory(file, fileId) {
-      const history = getFileHistory();
-      const id = fileId || Date.now().toString(36);
-      
-      // Store file as base64 so it can be reloaded
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const entry = {
-          id: id,
-          name: file.name,
-          size: file.size,
-          time: Date.now(),
-          data: e.target.result  // base64 data URL
-        };
-        // Prepend (newest first), limit to 20
-        history.unshift(entry);
-        if (history.length > 20) history.pop();
-        try {
-          localStorage.setItem(FILE_HISTORY_KEY, JSON.stringify(history));
-        } catch (err) {
-          // Storage full — remove oldest entries
-          while (history.length > 3) {
-            history.pop();
-            try { localStorage.setItem(FILE_HISTORY_KEY, JSON.stringify(history)); break; }
-            catch (e2) { /* keep popping */ }
-          }
+      function finish() {
+        const newName = input.value.trim() || oldName;
+        const projects = getProjects();
+        const proj = projects.find(p => p.id === id);
+        if (proj) {
+          proj.name = newName;
+          proj.updatedAt = Date.now();
+          saveProjects(projects);
         }
-        renderFileHistory();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function renderFileHistory() {
-      const list = document.getElementById('fileList');
-      const empty = document.getElementById('fileListEmpty');
-      const history = getFileHistory();
-      
-      // Remove old items (keep empty placeholder logic)
-      list.querySelectorAll('.file-item').forEach(el => el.remove());
-      
-      if (history.length === 0) {
-        empty.style.display = 'block';
-        return;
+        renderProjects();
       }
-      empty.style.display = 'none';
-      
-      history.forEach(function(entry) {
-        const div = document.createElement('div');
-        div.className = 'file-item' + (entry.id === activeFileId ? ' active' : '');
-        
-        const sizeStr = entry.size < 1024 ? entry.size + ' B'
-          : entry.size < 1048576 ? (entry.size / 1024).toFixed(1) + ' KB'
-          : (entry.size / 1048576).toFixed(1) + ' MB';
-        
-        const timeStr = formatTime(entry.time);
-        
-        div.innerHTML = '<div class="file-item-icon">📄</div>'
-          + '<div class="file-item-info">'
-          + '<div class="file-item-name">' + escapeHtml(entry.name) + '</div>'
-          + '<div class="file-item-meta">' + sizeStr + ' · ' + timeStr + '</div>'
-          + '</div>'
-          + '<div class="file-item-delete" data-id="' + entry.id + '">✕</div>';
-        
-        // Click to reload
-        div.addEventListener('click', function(e) {
-          if (e.target.classList.contains('file-item-delete')) return;
-          loadFileFromHistory(entry.id);
-        });
-        
-        // Delete button
-        div.querySelector('.file-item-delete').addEventListener('click', function(e) {
-          e.stopPropagation();
-          removeFileFromHistory(entry.id);
-        });
-        
-        list.appendChild(div);
+
+      input.addEventListener('blur', finish);
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') input.blur();
+        if (ev.key === 'Escape') { input.value = oldName; input.blur(); }
       });
     }
 
-    function loadFileFromHistory(id) {
-      const history = getFileHistory();
-      const entry = history.find(function(h) { return h.id === id; });
-      if (!entry || !entry.data) return;
-      
-      // Convert base64 data URL back to ArrayBuffer
-      const base64 = entry.data.split(',')[1];
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      
-      // Parse STL
-      const loader = new THREE.STLLoader();
-      try {
-        const geometry = loader.parse(bytes.buffer);
-        
-        if (currentMesh) {
-          scene.remove(currentMesh);
-          if (currentMesh.geometry) currentMesh.geometry.dispose();
-          if (currentMesh.material) currentMesh.material.dispose();
-        }
-        
-        geometry.computeBoundingBox();
-        const center = new THREE.Vector3();
-        geometry.boundingBox.getCenter(center);
-        geometry.translate(-center.x, -center.y, -center.z);
-        const size = new THREE.Vector3();
-        geometry.boundingBox.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 80 / maxDim;
-        
-        const material = new THREE.MeshPhongMaterial({ color: 0x00d9ff, specular: 0x333333, shininess: 100 });
-        currentMesh = new THREE.Mesh(geometry, material);
-        currentMesh.scale.set(scale, scale, scale);
-        currentMesh.rotation.x = -Math.PI / 2;
-        scene.add(currentMesh);
-        
-        document.getElementById('previewControls').style.display = 'flex';
-        window.enableChat();
-        resetCamera();
-        
-        activeFileId = id;
-        renderFileHistory();
-        
-        // Restore version history for this file
-        switchVersionHistory(id);
-        
-      } catch (e) {
-        console.error('Error loading from history:', e);
-      }
-    }
-
-    function removeFileFromHistory(id) {
-      var history = getFileHistory().filter(function(h) { return h.id !== id; });
-      localStorage.setItem(FILE_HISTORY_KEY, JSON.stringify(history));
-      // Also remove its version history
-      try { localStorage.removeItem(VERSION_STORE_PREFIX + id); } catch(e) {}
-      if (activeFileId === id) activeFileId = null;
-      renderFileHistory();
+    function openProject(id) {
+      window.location.href = 'workspace.html?project=' + encodeURIComponent(id);
     }
 
     function formatTime(ts) {
-      var d = new Date(ts);
-      var now = new Date();
-      var diffMs = now - d;
+      const d = new Date(ts);
+      const now = new Date();
+      const diffMs = now - d;
       if (diffMs < 60000) return '刚刚';
       if (diffMs < 3600000) return Math.floor(diffMs / 60000) + '分钟前';
       if (diffMs < 86400000) return Math.floor(diffMs / 3600000) + '小时前';
       if (diffMs < 604800000) return Math.floor(diffMs / 86400000) + '天前';
       return (d.getMonth() + 1) + '/' + d.getDate();
+    }
+
+    function renderProjects() {
+      const projects = getProjects();
+      const grid = document.getElementById('cardGrid');
+      const empty = document.getElementById('emptyState');
+      const countEl = document.getElementById('projectCount');
+
+      countEl.textContent = projects.length;
+
+      if (projects.length === 0) {
+        grid.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      grid.innerHTML = '';
+
+      projects.forEach(proj => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = proj.id;
+        card.onclick = () => openProject(proj.id);
+
+        const fileCount = proj.fileCount || 0;
+        const versionCount = proj.versionCount || 0;
+        const descText = proj.desc ? '<div style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(proj.desc) + '</div>' : '';
+
+        card.innerHTML = ''
+          + '<div class="card-preview">'
+          + '  <div class="card-preview-empty">'
+          + '    <span>⚙️</span>'
+          + '    <span class="card-preview-empty-text">' + (fileCount > 0 ? fileCount + ' 个文件' : '暂无文件') + '</span>'
+          + '  </div>'
+          + '  <div class="card-actions">'
+          + '    <button class="card-action-btn" title="重命名" onclick="renameProject(\'' + proj.id + '\', event)">✏️</button>'
+          + '    <button class="card-action-btn danger" title="删除" onclick="deleteProject(\'' + proj.id + '\', event)">🗑️</button>'
+          + '  </div>'
+          + '</div>'
+          + '<div class="card-body">'
+          + '  <div class="card-name">' + escapeHtml(proj.name) + '</div>'
+          + descText
+          + '  <div class="card-meta">'
+          + '    <div class="card-meta-left">'
+          + '      <span class="card-file-count">📄 ' + fileCount + ' 文件</span>'
+          + '      <span class="card-file-count">🔄 ' + versionCount + ' 版本</span>'
+          + '    </div>'
+          + '    <span>' + formatTime(proj.updatedAt) + '</span>'
+          + '  </div>'
+          + '</div>';
+
+        grid.appendChild(card);
+      });
     }
 
     function escapeHtml(s) {
@@ -2326,496 +527,18 @@
       return div.innerHTML;
     }
 
-    // ========== VERSION HISTORY (right panel, persisted per file) ==========
-    let versionCounter = 0;
-    // Runtime snapshots: geometry objects for ghost preview (not persisted)
-    // Map<vid, { geometry, ghostMesh }>
-    const runtimeSnapshots = {};
-    const GHOST_COLORS = [0xff9f43, 0xff6b6b, 0xa29bfe, 0x55efc4, 0xfd79a8, 0x74b9ff, 0xffeaa7];
-    const VERSION_STORE_PREFIX = 'stl_versions_';
-
-    // Serialize geometry position attr to base64 string
-    function geometryToBase64(geometry) {
-      var pos = geometry.attributes.position;
-      if (!pos) return null;
-      var arr = pos.array; // Float32Array
-      var bytes = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
-      var binary = '';
-      for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      return btoa(binary);
-    }
-
-    // Deserialize base64 back to BufferGeometry
-    function base64ToGeometry(b64) {
-      var binary = atob(b64);
-      var bytes = new Uint8Array(binary.length);
-      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      var floats = new Float32Array(bytes.buffer);
-      var geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.BufferAttribute(floats, 3));
-      geometry.computeVertexNormals();
-      return geometry;
-    }
-
-    // Get persisted version records for a file
-    function getFileVersions(fileId) {
-      if (!fileId) return [];
-      try { return JSON.parse(localStorage.getItem(VERSION_STORE_PREFIX + fileId) || '[]'); }
-      catch (e) { return []; }
-    }
-
-    // Save version records for current file
-    function saveFileVersions(fileId, records) {
-      if (!fileId) return;
-      try { localStorage.setItem(VERSION_STORE_PREFIX + fileId, JSON.stringify(records)); }
-      catch (e) {
-        // Storage full, trim oldest
-        while (records.length > 5) {
-          records.shift();
-          try { localStorage.setItem(VERSION_STORE_PREFIX + fileId, JSON.stringify(records)); return; }
-          catch (e2) { /* keep trimming */ }
-        }
-      }
-    }
-
-    // Current file's in-memory version records (mirrors localStorage)
-    let currentVersionRecords = [];
-
-    function addVersionRecord(action, detail) {
-      versionCounter++;
-      var vid = versionCounter;
-      var actionText = action + (detail ? '：' + detail : '');
-
-      // Build record — initially in "generating" state
-      var record = {
-        id: vid,
-        action: actionText,
-        status: 'generating',
-        time: Date.now(),
-        geoB64: null,
-        pos: null, rot: null, scl: null, color: null
-      };
-
-      currentVersionRecords.push(record);
-      renderVersionItem(record);
-
-      // Do the heavy snapshot work after a delay to show "生成中" state
-      setTimeout(function() {
-        var el = document.querySelector('.version-item[data-version-id="' + vid + '"]');
-        try {
-          if (currentMesh) {
-            record.geoB64 = geometryToBase64(currentMesh.geometry);
-            record.pos = currentMesh.position.toArray();
-            record.rot = [currentMesh.rotation.x, currentMesh.rotation.y, currentMesh.rotation.z];
-            record.scl = currentMesh.scale.toArray();
-            record.color = currentMesh.material.color.getHex();
-            runtimeSnapshots[vid] = { geometry: currentMesh.geometry.clone(), ghostMesh: null };
-          }
-          record.status = 'done';
-          saveFileVersions(activeFileId, currentVersionRecords);
-          if (el) updateVersionStatus(el, 'done');
-        } catch (err) {
-          console.error('Version snapshot failed:', err);
-          record.status = 'failed';
-          saveFileVersions(activeFileId, currentVersionRecords);
-          if (el) updateVersionStatus(el, 'failed');
-        }
-      }, 3000);
-    }
-
-    function updateVersionStatus(el, status) {
-      el.classList.remove('generating', 'failed', 'done');
-      el.classList.add(status);
-      var dot = el.querySelector('.version-status-dot');
-      if (dot) {
-        dot.className = 'version-status-dot ' + status;
-      }
-    }
-
-    // Render a single version item into the list (prepend)
-    function renderVersionItem(record) {
-      var list = document.getElementById('versionList');
-      var empty = document.getElementById('versionListEmpty');
-      if (empty) empty.style.display = 'none';
-
-      var d = new Date(record.time);
-      var timeStr = d.getHours().toString().padStart(2, '0') + ':' +
-                    d.getMinutes().toString().padStart(2, '0') + ':' +
-                    d.getSeconds().toString().padStart(2, '0');
-      var colorHex = GHOST_COLORS[(record.id - 1) % GHOST_COLORS.length];
-      var colorCSS = '#' + colorHex.toString(16).padStart(6, '0');
-
-      // Status badge
-      var statusClass = record.status || 'done';
-      var statusText = statusClass === 'generating' ? '' : (statusClass === 'failed' ? '失败' : '已完成');
-      var statusStyle = statusClass === 'done' ? ' style="opacity:0"' : '';
-
-      var div = document.createElement('div');
-      div.className = 'version-item ' + statusClass;
-      div.dataset.versionId = record.id;
-
-      // Detail info
-      var detailParts = [];
-      if (record.scl) detailParts.push('缩放 ' + record.scl[0].toFixed(2) + ' × ' + record.scl[1].toFixed(2) + ' × ' + record.scl[2].toFixed(2));
-      if (record.pos) detailParts.push('位置 (' + record.pos[0].toFixed(1) + ', ' + record.pos[1].toFixed(1) + ', ' + record.pos[2].toFixed(1) + ')');
-      if (record.rot) detailParts.push('旋转 (' + (record.rot[0]*180/Math.PI).toFixed(1) + '°, ' + (record.rot[1]*180/Math.PI).toFixed(1) + '°, ' + (record.rot[2]*180/Math.PI).toFixed(1) + '°)');
-      if (record.color != null) detailParts.push('颜色 #' + record.color.toString(16).padStart(6, '0'));
-
-      div.innerHTML = '<div class="version-top">'
-        + '<span class="version-status-dot ' + statusClass + '"></span>'
-        + '<span class="version-desc">' + escapeHtml(record.action) + '</span>'
-        + '<span class="version-time">' + timeStr + '</span>'
-        + '</div>'
-        + (detailParts.length ? '<div class="version-detail">' + detailParts.join(' · ') + '</div>' : '')
-        + '<div class="version-actions">'
-        + '<span class="version-eye" data-vid="' + record.id + '" title="叠加预览" style="color:' + colorCSS + '">👁</span>'
-        + '<span class="version-revert" data-step="' + record.id + '">恢复至此版本</span>'
-        + '<span class="version-more" data-vid="' + record.id + '">···'
-        + '<div class="version-menu">'
-        + '<div class="version-menu-item" data-action="view-cmd">查看设计指令</div>'
-        + '<div class="version-menu-item" data-action="export-stl">导出 STL</div>'
-        + '<div class="version-menu-item" data-action="export-step">导出 STEP</div>'
-        + '<div class="version-menu-item danger" data-action="delete">删除</div>'
-        + '</div>'
-        + '</span>'
-        + '</div>';
-
-      list.insertBefore(div, list.firstChild);
-
-      // Click item to toggle detail panel + switch preview + scroll chat
-      div.addEventListener('click', function(e) {
-        if (e.target.closest('.version-actions')) return;
-        var vid = parseInt(div.dataset.versionId);
-        var wasSelected = div.classList.contains('selected');
-        // Deselect all
-        list.querySelectorAll('.version-item.selected').forEach(function(el) { el.classList.remove('selected'); });
-        // Clear chat highlights
-        chatMessages.querySelectorAll('.chat-message.highlight').forEach(function(el) { el.classList.remove('highlight'); });
-        
-        if (!wasSelected) {
-          div.classList.add('selected');
-          switchToVersionPreview(vid);
-          scrollChatToVersion(vid);
-        } else {
-          restoreLiveState();
-        }
-      });
-
-      div.querySelector('.version-eye').addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleGhostPreview(parseInt(this.dataset.vid), this);
-      });
-      div.querySelector('.version-revert').addEventListener('click', function(e) {
-        e.stopPropagation();
-        var step = parseInt(this.dataset.step);
-        var stepsToUndo = versionCounter - step;
-        for (var i = 0; i < stepsToUndo; i++) undo();
-      });
-      // More menu toggle
-      var moreBtn = div.querySelector('.version-more');
-      var menu = div.querySelector('.version-menu');
-      moreBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        document.querySelectorAll('.version-menu.show').forEach(function(m) { if (m !== menu) m.classList.remove('show'); });
-        menu.classList.toggle('show');
-      });
-      // Menu actions
-      menu.querySelectorAll('.version-menu-item').forEach(function(item) {
-        item.addEventListener('click', function(e) {
-          e.stopPropagation();
-          menu.classList.remove('show');
-          var vid = parseInt(moreBtn.dataset.vid);
-          var action = this.dataset.action;
-          if (action === 'view-cmd') viewVersionCommand(vid);
-          else if (action === 'export-stl') exportVersionAsSTL(vid);
-          else if (action === 'export-step') exportVersionAsSTEP(vid);
-          else if (action === 'delete') deleteVersion(vid);
-        });
-      });
-    }
-
-    // Ensure runtime snapshot exists for a vid (lazy-load from base64 if needed)
-    function ensureRuntimeSnapshot(vid) {
-      if (runtimeSnapshots[vid] && runtimeSnapshots[vid].geometry) return runtimeSnapshots[vid];
-      var rec = currentVersionRecords.find(function(r) { return r.id === vid; });
-      if (!rec || !rec.geoB64) return null;
-      runtimeSnapshots[vid] = { geometry: base64ToGeometry(rec.geoB64), ghostMesh: null };
-      return runtimeSnapshots[vid];
-    }
-
-    function toggleGhostPreview(vid, eyeEl) {
-      var snap = ensureRuntimeSnapshot(vid);
-      if (!snap || !snap.geometry || !scene) return;
-      var rec = currentVersionRecords.find(function(r) { return r.id === vid; });
-      var item = eyeEl.closest('.version-item');
-
-      if (snap.ghostMesh) {
-        scene.remove(snap.ghostMesh);
-        snap.ghostMesh.geometry.dispose();
-        snap.ghostMesh.material.dispose();
-        snap.ghostMesh = null;
-        eyeEl.classList.remove('active');
-        if (item) item.classList.remove('previewing');
-      } else {
-        var ghostColor = GHOST_COLORS[(vid - 1) % GHOST_COLORS.length];
-        var mat = new THREE.MeshPhongMaterial({
-          color: ghostColor, transparent: true, opacity: 0.35,
-          wireframe: false, depthWrite: false, side: THREE.DoubleSide
-        });
-        var ghost = new THREE.Mesh(snap.geometry.clone(), mat);
-        if (rec && rec.pos) ghost.position.fromArray(rec.pos);
-        if (rec && rec.rot) { ghost.rotation.x = rec.rot[0]; ghost.rotation.y = rec.rot[1]; ghost.rotation.z = rec.rot[2]; }
-        if (rec && rec.scl) ghost.scale.fromArray(rec.scl);
-        ghost.renderOrder = -1;
-        scene.add(ghost);
-        snap.ghostMesh = ghost;
-        eyeEl.classList.add('active');
-        if (item) item.classList.add('previewing');
-      }
-    }
-
-    // Remove all ghost meshes and dispose runtime snapshots
-    function cleanupRuntimeSnapshots() {
-      for (var vid in runtimeSnapshots) {
-        var snap = runtimeSnapshots[vid];
-        if (snap.ghostMesh) {
-          scene.remove(snap.ghostMesh);
-          snap.ghostMesh.geometry.dispose();
-          snap.ghostMesh.material.dispose();
-        }
-        if (snap.geometry) snap.geometry.dispose();
-      }
-      for (var k in runtimeSnapshots) delete runtimeSnapshots[k];
-    }
-
-    // Switch version history when changing files
-    function switchVersionHistory(newFileId) {
-      // Cleanup scene ghosts
-      cleanupRuntimeSnapshots();
-      // Clear DOM
-      var list = document.getElementById('versionList');
-      var empty = document.getElementById('versionListEmpty');
-      list.querySelectorAll('.version-item').forEach(function(el) { el.remove(); });
-
-      // Load persisted records for new file
-      currentVersionRecords = getFileVersions(newFileId);
-      versionCounter = currentVersionRecords.length > 0
-        ? Math.max.apply(null, currentVersionRecords.map(function(r) { return r.id; }))
-        : 0;
-
-      if (currentVersionRecords.length === 0) {
-        if (empty) empty.style.display = 'block';
-      } else {
-        if (empty) empty.style.display = 'none';
-        // Render in order (oldest first so newest ends up on top)
-        currentVersionRecords.forEach(function(rec) { renderVersionItem(rec); });
-      }
-    }
-
-    // Legacy wrapper — called when uploading brand-new file (no prior history)
-    function clearVersionHistory() {
-      cleanupRuntimeSnapshots();
-      currentVersionRecords = [];
-      versionCounter = 0;
-      var list = document.getElementById('versionList');
-      var empty = document.getElementById('versionListEmpty');
-      list.querySelectorAll('.version-item').forEach(function(el) { el.remove(); });
-      if (empty) empty.style.display = 'block';
-    }
-
-    // ========== VERSION PREVIEW SWITCHING ==========
-    function switchToVersionPreview(vid) {
-      if (!currentMesh) return;
-      var snap = ensureRuntimeSnapshot(vid);
-      var rec = currentVersionRecords.find(function(r) { return r.id === vid; });
-      if (!snap || !snap.geometry || !rec) return;
-      
-      // Save current live state if not already backed up
-      if (!liveStateBackup) {
-        liveStateBackup = {
-          geometry: currentMesh.geometry.clone(),
-          position: currentMesh.position.clone(),
-          rotation: currentMesh.rotation.clone(),
-          scale: currentMesh.scale.clone(),
-          color: currentMesh.material.color.getHex(),
-          wireframe: currentMesh.material.wireframe,
-          opacity: currentMesh.material.opacity,
-          transparent: currentMesh.material.transparent
-        };
-      }
-      
-      // Apply version snapshot to the mesh
-      currentMesh.geometry.dispose();
-      currentMesh.geometry = snap.geometry.clone();
-      if (rec.pos) currentMesh.position.fromArray(rec.pos);
-      if (rec.rot) { currentMesh.rotation.x = rec.rot[0]; currentMesh.rotation.y = rec.rot[1]; currentMesh.rotation.z = rec.rot[2]; }
-      if (rec.scl) currentMesh.scale.fromArray(rec.scl);
-      if (rec.color != null) currentMesh.material.color.setHex(rec.color);
-      currentMesh.material.needsUpdate = true;
-      previewingVersionId = vid;
-    }
-    
-    function restoreLiveState() {
-      if (!liveStateBackup || !currentMesh) return;
-      currentMesh.geometry.dispose();
-      currentMesh.geometry = liveStateBackup.geometry;
-      currentMesh.position.copy(liveStateBackup.position);
-      currentMesh.rotation.copy(liveStateBackup.rotation);
-      currentMesh.scale.copy(liveStateBackup.scale);
-      currentMesh.material.color.setHex(liveStateBackup.color);
-      currentMesh.material.wireframe = liveStateBackup.wireframe;
-      currentMesh.material.opacity = liveStateBackup.opacity;
-      currentMesh.material.transparent = liveStateBackup.transparent;
-      currentMesh.material.needsUpdate = true;
-      liveStateBackup = null;
-      previewingVersionId = null;
-    }
-
-    // ========== TOGGLE ORIGINAL / CURRENT ==========
-    let isShowingOriginal = false;
-    let currentStateBackup = null;
-    
-    window.toggleOriginal = function() {
-      if (!originalSnapshot || !originalSnapshot.geometry || !currentMesh) return;
-      var btn = document.getElementById('btn-original');
-      
-      if (!isShowingOriginal) {
-        // 保存当前修改状态
-        currentStateBackup = {
-          geometry: currentMesh.geometry.clone(),
-          position: currentMesh.position.clone(),
-          rotation: currentMesh.rotation.clone(),
-          scale: currentMesh.scale.clone(),
-          color: currentMesh.material.color.getHex(),
-          wireframe: currentMesh.material.wireframe,
-          opacity: currentMesh.material.opacity,
-          transparent: currentMesh.material.transparent
-        };
-        // 切到原稿
-        currentMesh.geometry.dispose();
-        currentMesh.geometry = originalSnapshot.geometry.clone();
-        currentMesh.position.copy(originalSnapshot.position);
-        currentMesh.rotation.copy(originalSnapshot.rotation);
-        currentMesh.scale.copy(originalSnapshot.scale);
-        currentMesh.material.color.setHex(originalSnapshot.color);
-        currentMesh.material.wireframe = false;
-        currentMesh.material.transparent = false;
-        currentMesh.material.opacity = 1;
-        currentMesh.material.needsUpdate = true;
-        isShowingOriginal = true;
-        if (btn) btn.classList.add('active');
-      } else {
-        // 切回当前修改状态
-        if (currentStateBackup) {
-          currentMesh.geometry.dispose();
-          currentMesh.geometry = currentStateBackup.geometry;
-          currentMesh.position.copy(currentStateBackup.position);
-          currentMesh.rotation.copy(currentStateBackup.rotation);
-          currentMesh.scale.copy(currentStateBackup.scale);
-          currentMesh.material.color.setHex(currentStateBackup.color);
-          currentMesh.material.wireframe = currentStateBackup.wireframe;
-          currentMesh.material.opacity = currentStateBackup.opacity;
-          currentMesh.material.transparent = currentStateBackup.transparent;
-          currentMesh.material.needsUpdate = true;
-          currentStateBackup = null;
-        }
-        isShowingOriginal = false;
-        if (btn) btn.classList.remove('active');
-      }
-    };
-
-    // ========== SCROLL CHAT TO VERSION ==========
-    function scrollChatToVersion(vid) {
-      // Find chat messages tagged with this vid (or nearest <= vid)
-      var allMsgs = chatMessages.querySelectorAll('.chat-message[data-vid]');
-      var target = null;
-      for (var i = 0; i < allMsgs.length; i++) {
-        var msgVid = parseInt(allMsgs[i].dataset.vid);
-        if (msgVid === vid) { target = allMsgs[i]; break; }
-      }
-      // If exact match not found, find the closest preceding one
-      if (!target) {
-        for (var i = allMsgs.length - 1; i >= 0; i--) {
-          if (parseInt(allMsgs[i].dataset.vid) <= vid) { target = allMsgs[i]; break; }
-        }
-      }
-      if (!target) return;
-      
-      // Scroll into view
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Highlight briefly
-      target.classList.add('highlight');
-      setTimeout(function() { target.classList.remove('highlight'); }, 2500);
-    }
-
-    // ========== VERSION MENU ACTIONS ==========
-    
-    // Close all menus on click outside
-    document.addEventListener('click', function() {
-      document.querySelectorAll('.version-menu.show').forEach(function(m) { m.classList.remove('show'); });
+    // Close modal on overlay click
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) hideModal();
     });
 
-    // View the design command that created a version
-    function viewVersionCommand(vid) {
-      var rec = currentVersionRecords.find(function(r) { return r.id === vid; });
-      if (!rec) return;
-      addChatMessage('assistant', '📋 v' + vid + ' 设计指令：\n' + rec.action);
-    }
+    // Enter key in modal
+    document.getElementById('modalName').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') createProject();
+    });
 
-    // Export a specific version snapshot as STL
-    function exportVersionAsSTL(vid) {
-      var snap = ensureRuntimeSnapshot(vid);
-      if (!snap || !snap.geometry) { alert('该版本快照不可用'); return; }
-      var stlData = generateBinarySTL(snap.geometry);
-      var blob = new Blob([stlData], { type: 'application/octet-stream' });
-      var url = URL.createObjectURL(blob);
-      var link = document.createElement('a');
-      link.href = url;
-      link.download = 'part_v' + vid + '.stl';
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // Export a specific version snapshot as STEP (placeholder — STEP export requires backend)
-    function exportVersionAsSTEP(vid) {
-      alert('STEP 导出需要后端服务支持，当前版本暂不可用。\n请使用"导出 STL"后用 FreeCAD 转换为 STEP。');
-    }
-
-    // Export current model as STEP (global button)
-    window.exportSTEP = function() {
-      alert('STEP 导出需要后端服务支持，当前版本暂不可用。\n请先导出 STL，再用 FreeCAD 或 MeshLab 转换为 STEP。');
-    };
-
-    // Delete a version record
-    function deleteVersion(vid) {
-      // Remove ghost if visible
-      if (runtimeSnapshots[vid] && runtimeSnapshots[vid].ghostMesh) {
-        scene.remove(runtimeSnapshots[vid].ghostMesh);
-        runtimeSnapshots[vid].ghostMesh.geometry.dispose();
-        runtimeSnapshots[vid].ghostMesh.material.dispose();
-      }
-      if (runtimeSnapshots[vid] && runtimeSnapshots[vid].geometry) {
-        runtimeSnapshots[vid].geometry.dispose();
-      }
-      delete runtimeSnapshots[vid];
-
-      // Remove from records
-      currentVersionRecords = currentVersionRecords.filter(function(r) { return r.id !== vid; });
-      saveFileVersions(activeFileId, currentVersionRecords);
-
-      // Remove DOM element
-      var el = document.querySelector('.version-item[data-version-id="' + vid + '"]');
-      if (el) el.remove();
-
-      // Show empty if no records left
-      if (currentVersionRecords.length === 0) {
-        var empty = document.getElementById('versionListEmpty');
-        if (empty) empty.style.display = 'block';
-      }
-    }
-
-    // Init file history on page load
-    renderFileHistory();
+    // Init
+    renderProjects();
   </script>
 </body>
 </html>

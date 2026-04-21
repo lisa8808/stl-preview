@@ -440,7 +440,11 @@
 <body>
   <!-- Header -->
   <header class="header">
-    <div class="header-title">⚙️ AI 机械设计工作台</div>
+    <div class="header-title">
+      <a href="index.html" class="header-btn" style="text-decoration:none;margin-right:8px;padding:6px 10px;">← 返回</a>
+      ⚙️ AI 机械设计工作台
+      <span id="projectNameDisplay" style="font-size:13px;color:rgba(255,255,255,0.45);margin-left:10px;font-weight:400;"></span>
+    </div>
     <div class="header-actions">
       <button class="header-btn" onclick="createTestPlate()">创建测试零件</button>
     </div>
@@ -472,7 +476,7 @@
           <div class="preview-placeholder-text" style="font-size:20px;color:rgba(255,255,255,0.6);margin-bottom:12px;">AI 机械设计专家</div>
           <div class="preview-placeholder-hint" style="max-width:420px;line-height:1.8;font-size:13px;color:rgba(255,255,255,0.35);">
             导入 STL / STEP 零件 → 自动几何分析 → 对话修改参数 → 导出新零件<br><br>
-            <span style="color:rgba(0,217,255,0.5);">拖入文件或点击左侧上传开始</span>
+            <span style="color:rgba(0,217,255,0.5);">拖入文件或点击此处上传</span>
           </div>
         </div>
         <canvas id="preview-canvas"></canvas>
@@ -2033,6 +2037,13 @@
       if (e.dataTransfer.files.length) handleSTLFile(e.dataTransfer.files[0]);
     });
 
+    // Allow clicking the preview placeholder to upload
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    if (previewPlaceholder) {
+      previewPlaceholder.style.cursor = 'pointer';
+      previewPlaceholder.addEventListener('click', () => fileInput.click());
+    }
+
     // Current active file id
     let activeFileId = null;
 
@@ -2809,6 +2820,22 @@
 
     // Init file history on page load
     renderFileHistory();
+
+    // Show project name from URL params
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var projectId = params.get('project');
+      if (projectId) {
+        try {
+          var projects = JSON.parse(localStorage.getItem('stl_projects') || '[]');
+          var proj = projects.find(function(p) { return p.id === projectId; });
+          if (proj) {
+            document.getElementById('projectNameDisplay').textContent = proj.name;
+            document.title = proj.name + ' - AI 机械设计工作台';
+          }
+        } catch(e) {}
+      }
+    })();
   </script>
 </body>
 </html>
